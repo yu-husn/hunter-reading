@@ -248,10 +248,3 @@ musicButton.onclick = async () => {
     musicButton.disabled = false;
   }
 };
-
-const animalToggle = document.querySelector('#animal-toggle');
-animalToggle.onclick = () => {
-  const paused = animalToggle.closest('.animal-trail').classList.toggle('paused');
-  animalToggle.setAttribute('aria-pressed', String(paused));
-  animalToggle.textContent = paused ? '播放動物動畫' : '暫停動物動畫';
-};

@@ -27,12 +27,56 @@ fieldset:disabled { opacity: 1; }
 button:disabled { cursor: default; opacity: .6; }
 #pair-results li + li { margin-top: .65rem; }
 #reading-focus { margin-top: 2rem; }
-.animal-trail { margin-top: 18px; }
-.animal-scenes { display: flex; gap: 12px; margin-bottom: 8px; }
-.animal-scene { overflow: hidden; width: 140px; height: 82px; background: #365447; border-radius: 12px; }
-.animal { display: block; animation: animal-pass 5s ease-in-out infinite alternate; }
-.boar { width: 66px; height: 82px; background: url('trial-scenes.png') 33.333% 100% / 400% 200%; border-radius: 12px; }
-.fox { font-size: 48px; width: 64px; text-align: center; animation-delay: -2s; }
-@keyframes animal-pass { from { transform: translate(4px, 2px); } to { transform: translate(69px, -2px); } }
-.animal-trail.paused .animal { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .animal { animation: none; } }
+
+/* Geometric bands inspired by weaving. */
+:root {
+  --ink: #282321;
+  --paper: #f3e8d8;
+  --surface: #fffaf0;
+  --rust: #8d3025;
+  --gold: #e0b474;
+  --weave:
+    repeating-linear-gradient(45deg, transparent 0 8px, var(--gold) 8px 10px, transparent 10px 20px),
+    repeating-linear-gradient(-45deg, transparent 0 8px, #d1725b 8px 10px, transparent 10px 20px);
+}
+body { background: var(--paper); color: var(--ink); }
+header {
+  position: relative;
+  padding: 52px 0 32px;
+  background: var(--ink);
+  border: 0;
+}
+header::before, header::after {
+  content: "";
+  display: block;
+  height: 20px;
+  background: var(--weave), var(--rust);
+  border-block: 2px solid var(--gold);
+}
+header::before { position: absolute; inset: 0 0 auto; }
+header::after { position: absolute; inset: auto 0 0; }
+header h1 { font-family: Georgia, "Noto Serif TC", "PMingLiU", serif; letter-spacing: .12em; }
+header p { color: #f0d6b3; }
+.assessment-nav { margin: 22px 0 12px; gap: 8px; }
+.assessment-nav a {
+  text-decoration: none;
+  padding: 7px 12px;
+  border: 1px solid #d3ad80;
+  border-radius: 3px;
+  color: #fff7eb;
+}
+.assessment-nav a:hover { background: var(--rust); }
+.assessment-bar, section, fieldset { background: var(--surface); }
+.assessment-bar { border-bottom: 2px solid var(--rust); }
+main > section { border-top: 4px solid var(--rust); border-radius: 5px; }
+main > section > h2 { display: flex; align-items: baseline; gap: .6em; }
+main > section > h2::before { content: "◆"; color: var(--rust); font-size: .65em; }
+button { background: var(--rust); }
+button.secondary { background: #ecddc8; color: var(--ink); }
+a, #reading-focus summary { color: var(--rust); }
+input { accent-color: var(--rust); }
+label:has(input:checked), .pairs button[aria-pressed=true] {
+  background: #f4dfcf;
+  border-color: var(--rust);
+}
+.scene-card, .pairs button, .feedback { background: #f4eadb; color: var(--ink); }
