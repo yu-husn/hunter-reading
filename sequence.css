@@ -1,0 +1,73 @@
+#sequence {
+  scroll-margin-top: 1rem;
+}
+
+.sequence-actions {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 0 4px;
+  background: #fffdf7;
+}
+
+.sequence-status {
+  min-height: 1.7em;
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
+.sequence-cards {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.scene-card {
+  display: grid;
+  grid-template-columns: clamp(90px, 18vw, 152px) 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #dbded1;
+  border-radius: 12px;
+  background: #f7f7ef;
+}
+
+.scene-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 7px;
+  background: #e6e6da url('trial-scenes.png') no-repeat;
+  background-size: 400% 200%;
+}
+
+.scene-card h3, .scene-card p {
+  margin: 0;
+}
+
+.scene-card p {
+  margin-top: 4px;
+}
+
+.scene-controls {
+  display: grid;
+  gap: 6px;
+}
+
+.scene-controls button:disabled {
+  opacity: .48;
+  cursor: default;
+}
+
+.sequence-solution li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  #sequence { padding: 14px; }
+  .scene-card { grid-template-columns: 76px 1fr; gap: 8px; align-items: start; }
+  .scene-controls { grid-column: 2; display: flex; flex-wrap: wrap; }
+  .scene-card h3, .scene-card p { font-size: 1rem; }
+}
