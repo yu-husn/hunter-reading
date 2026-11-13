@@ -204,14 +204,19 @@ function finishAssessment(expired) {
 
 function beginTimedAttempt() {
   deadline = Date.now() + duration * 1000;
+  submitButton.textContent = '交卷';
   startAssessment();
 }
 
 startButton.onclick = beginTimedAttempt;
 restartButton.onclick = beginTimedAttempt;
 submitButton.onclick = () => {
-  if (assessmentIsActive() && window.confirm('確定交卷？交卷後會顯示分數與解析。')) {
-    if (assessmentIsActive()) finishAssessment(false);
+  if (!assessmentIsActive()) return;
+  if (submitButton.textContent === '確認交卷') {
+    finishAssessment(false);
+  } else {
+    submitButton.textContent = '確認交卷';
+    message.textContent = '再按一次「確認交卷」即可查看成績。';
   }
 };
 document.querySelector('#reading-questions').addEventListener('change', event => {
