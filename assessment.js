@@ -67,7 +67,7 @@ function makeQuestions(containerId, questions, points, scoreId) {
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 5, 'author-score');
 const readingGroups = [
   ['情節與動機', [0, 1, 2, 18, 17]],
-  ['人物與證據', [3, 15, 19, 6, 16]],
+  ['人物與證據', [19, 6, 3, 15, 16]],
   ['意象與寫法', [7, 8, 13, 14, 5]],
   ['文化與主旨', [4, 9, 10, 11, 12]]
 ];
@@ -77,11 +77,24 @@ const readingQuiz = makeQuestions('reading-questions',
 const readingFields = [...document.querySelectorAll('#reading-questions fieldset')];
 const groupButtons = [...document.querySelectorAll('#reading-groups button')];
 const groupTitle = document.querySelector('#reading-group-title');
+const evidenceChallenge = document.querySelector('#evidence-challenge');
+const evidenceSteps = [
+  { index: 5, label: '第一步・判斷帶領方式' },
+  { index: 6, label: '第二步・找出課文證據' }
+];
+for (const { index, label } of evidenceSteps) {
+  const field = readingFields[index];
+  field.classList.add('evidence-step');
+  const heading = document.createElement('span');
+  heading.textContent = label;
+  field.querySelector('legend').prepend(heading);
+}
 let currentGroup = 0;
 
 function showReadingGroup(index, focus = false) {
   currentGroup = index;
   groupTitle.textContent = readingGroups[index][0];
+  evidenceChallenge.hidden = index !== 1;
   readingFields.forEach((field, question) => {
     field.hidden = Math.floor(question / 5) !== index;
   });

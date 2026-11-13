@@ -84,3 +84,15 @@ label:has(input:checked), .pairs button[aria-pressed=true] {
 .reading-groups { display: flex; flex-wrap: wrap; gap: .5rem; }
 .reading-groups button[aria-pressed="true"] { background: var(--rust); color: white; }
 #reading-group-title { scroll-margin-top: 140px; }
+
+#evidence-challenge {
+  padding: .75rem 1rem;
+  border-inline-start: 4px solid var(--rust);
+  background: #f4eadb;
+}
+.evidence-step { border-color: var(--rust); }
+.evidence-step legend span {
+  display: block;
+  color: var(--rust);
+  font-size: .88rem;
+}
