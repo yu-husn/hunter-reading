@@ -1,5 +1,8 @@
 const duration = 20 * 60;
+const assessmentBar = document.querySelector('.assessment-bar');
 const clock = document.querySelector('#countdown');
+const clockProgress = document.querySelector('#countdown-progress');
+const clockWarning = document.querySelector('#countdown-warning');
 const message = document.querySelector('#assessment-message');
 const startButton = document.querySelector('#start-assessment');
 const submitButton = document.querySelector('#submit-assessment');
@@ -199,8 +202,14 @@ function gradePairs() {
 }
 
 function showTime(seconds) {
-  clock.textContent = String(Math.floor(seconds / 60)).padStart(2, '0') + ':' +
+  const display = String(Math.floor(seconds / 60)).padStart(2, '0') + ':' +
     String(seconds % 60).padStart(2, '0');
+  if (clock.textContent !== display) clock.textContent = display;
+  clockProgress.value = seconds;
+  const urgent = state === 'active' && seconds > 0 && seconds <= 60;
+  assessmentBar.toggleAttribute('data-urgent', urgent);
+  const warning = urgent ? '最後 1 分鐘' : '';
+  if (clockWarning.textContent !== warning) clockWarning.textContent = warning;
 }
 
 function updateTime() {
@@ -236,7 +245,7 @@ function finishAssessment(expired) {
   if (state !== 'active') return;
   state = 'submitted';
   clearInterval(timer);
-  if (expired) showTime(0);
+  showTime(expired ? 0 : Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
   const sequenceScore = gradeSequence();
   document.querySelector('#sequence-score').textContent += '｜得分 ' + sequenceScore + ' 分';
   setSequenceState(state);
@@ -281,11 +290,16 @@ authorQuiz.reset(false);
 readingQuiz.reset(false);
 renderPairs();
 
+clockProgress.max = duration;
+new ResizeObserver(([entry]) => {
+  entry.target.parentElement.style.setProperty('--assessment-offset', `${entry.target.offsetHeight + 12}px`);
+}).observe(assessmentBar);
+
 const musicButton = document.querySelector('#music-toggle');
-const music = new Audio('forest-loop.wav');
+const music = new Audio('forest-pursuit.wav');
 music.loop = true;
 music.preload = 'none';
-music.volume = 0.45;
+music.volume = 0.4;
 musicButton.onclick = async () => {
   musicButton.disabled = true;
   try {

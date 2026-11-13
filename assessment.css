@@ -17,10 +17,18 @@
 .assessment-actions { gap: 6px; margin-top: 5px; }
 .assessment-actions button { padding: 5px 12px; }
 .assessment-bar p { margin: 4px 0 0; font-size: .88rem; }
+.assessment-time { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2px 12px; }
+.countdown-display { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; font-weight: 750; }
 #countdown, #total-score { font-weight: 750; font-variant-numeric: tabular-nums; }
-.score-label { margin-left: 1rem; }
+#countdown { font-size: clamp(1.65rem, 4vw, 2.15rem); line-height: 1.1; }
+#countdown-warning { font-size: .8rem; }
+#countdown-warning:empty { display: none; }
+#countdown-progress { display: block; height: 8px; margin: 5px 0 7px; accent-color: var(--ink); }
+.assessment-bar[data-urgent] .countdown-display { color: var(--rust); }
+.assessment-bar[data-urgent] #countdown-progress { accent-color: var(--rust); }
+.score-label { white-space: nowrap; }
 .section-score, .item-score { font-weight: 650; }
-#author, #sequence, #imagery, #quiz, #reading-focus, fieldset, .scene-card { scroll-margin-top: 140px; }
+#author, #sequence, #imagery, #quiz, #reading-focus, fieldset, .scene-card { scroll-margin-top: var(--assessment-offset, 170px); }
 #sequence .sequence-actions { position: static; }
 fieldset legend { font-weight: 700; padding: 0 6px; }
 fieldset:disabled { opacity: 1; }
@@ -83,7 +91,7 @@ label:has(input:checked), .pairs button[aria-pressed=true] {
 
 .reading-groups { display: flex; flex-wrap: wrap; gap: .5rem; }
 .reading-groups button[aria-pressed="true"] { background: var(--rust); color: white; }
-#reading-group-title { scroll-margin-top: 140px; }
+#reading-group-title { scroll-margin-top: var(--assessment-offset, 170px); }
 
 #evidence-challenge {
   padding: .75rem 1rem;
