@@ -27,3 +27,12 @@ fieldset:disabled { opacity: 1; }
 button:disabled { cursor: default; opacity: .6; }
 #pair-results li + li { margin-top: .65rem; }
 #reading-focus { margin-top: 2rem; }
+.animal-trail { margin-top: 18px; }
+.animal-scenes { display: flex; gap: 12px; margin-bottom: 8px; }
+.animal-scene { overflow: hidden; width: 140px; height: 82px; background: #365447; border-radius: 12px; }
+.animal { display: block; animation: animal-pass 5s ease-in-out infinite alternate; }
+.boar { width: 66px; height: 82px; background: url('trial-scenes.png') 33.333% 100% / 400% 200%; border-radius: 12px; }
+.fox { font-size: 48px; width: 64px; text-align: center; animation-delay: -2s; }
+@keyframes animal-pass { from { transform: translate(4px, 2px); } to { transform: translate(69px, -2px); } }
+.animal-trail.paused .animal { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .animal { animation: none; } }
