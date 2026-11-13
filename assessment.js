@@ -296,10 +296,10 @@ new ResizeObserver(([entry]) => {
 }).observe(assessmentBar);
 
 const musicButton = document.querySelector('#music-toggle');
-const music = new Audio('forest-trail.wav');
+const music = new Audio('drums-of-the-deep.mp3');
 music.loop = true;
 music.preload = 'none';
-music.volume = 0.35;
+music.volume = 0.3;
 musicButton.onclick = async () => {
   musicButton.disabled = true;
   try {

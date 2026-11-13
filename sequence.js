@@ -42,80 +42,180 @@ const scenes = [
 ];
 
 const sequence = document.querySelector('#sequence');
+const slots = sequence.querySelector('.sequence-slots');
 const cards = sequence.querySelector('.sequence-cards');
+const tray = sequence.querySelector('.sequence-tray');
 const status = sequence.querySelector('.sequence-status');
 const solution = sequence.querySelector('.sequence-solution');
+const shuffleButton = sequence.querySelector('.sequence-reset');
+const returnButton = sequence.querySelector('.sequence-return');
 const initialOrder = [4, 1, 6, 3, 7, 0, 5, 2];
-let order = [...initialOrder];
-let sequenceTouched = false;
+let trayOrder = [...initialOrder];
+let placements = Array(scenes.length).fill(null);
+let selectedScene = null;
+let draggingScene = null;
 let sequenceLocked = true;
 
-function renderCards() {
-  cards.replaceChildren();
-  order.forEach((sceneIndex, position) => {
-    const { title, summary } = scenes[sceneIndex];
-    const card = document.createElement('li');
-    card.className = 'scene-card';
-    const art = document.createElement('span');
-    art.className = 'scene-art';
-    art.style.backgroundPosition = (sceneIndex % 4) / 3 * 100 + '% ' + (sceneIndex < 4 ? 0 : 100) + '%';
-    art.setAttribute('aria-hidden', 'true');
-    const copy = document.createElement('div');
-    const heading = document.createElement('h3');
-    heading.textContent = (position + 1) + '．' + title;
-    const description = document.createElement('p');
-    description.textContent = summary;
-    copy.append(heading, description);
-    if (sequenceLocked && !solution.hidden) {
-      const points = sequenceTouched && sceneIndex === position ? 2.5 : 0;
-      const score = document.createElement('p');
-      score.className = 'item-score';
-      score.textContent = points + '／2.5 分';
-      copy.append(score);
+function makeSceneArt(sceneIndex) {
+  const art = document.createElement('span');
+  art.className = 'scene-art';
+  art.style.backgroundPosition = (sceneIndex % 4) / 3 * 100 + '% ' +
+    (sceneIndex < 4 ? 0 : 100) + '%';
+  art.setAttribute('aria-hidden', 'true');
+  return art;
+}
+
+function selectScene(sceneIndex) {
+  selectedScene = selectedScene === sceneIndex ? null : sceneIndex;
+  sequence.querySelectorAll('[data-scene]').forEach(button => {
+    button.setAttribute('aria-pressed', String(Number(button.dataset.scene) === selectedScene));
+  });
+  returnButton.hidden = selectedScene === null || !placements.includes(selectedScene);
+  status.textContent = selectedScene === null ? '已取消選取。' :
+    '已選「' + scenes[selectedScene].title + '」，請選上方的格子。';
+  if (selectedScene !== null) {
+    const firstSlot = slots.querySelector('button');
+    firstSlot.focus({ preventScroll: true });
+    const bar = document.querySelector('.assessment-bar');
+    if (firstSlot.getBoundingClientRect().top < bar.getBoundingClientRect().bottom) {
+      firstSlot.scrollIntoView({ block: 'start' });
     }
-    const controls = document.createElement('div');
-    controls.className = 'scene-controls';
-    for (const step of [-1, 1]) {
-      const button = document.createElement('button');
-      const label = step === -1 ? '上移' : '下移';
-      const destination = position + step;
-      button.type = 'button';
-      button.className = 'secondary';
-      button.textContent = (step === -1 ? '↑ ' : '↓ ') + label;
-      button.setAttribute('aria-label', label + '：' + title);
-      button.disabled = sequenceLocked || destination < 0 || destination >= order.length;
-      button.addEventListener('click', () => {
-        if (!assessmentIsActive()) return;
-        sequenceTouched = true;
-        [order[position], order[destination]] = [order[destination], order[position]];
-        renderCards();
-        status.textContent = '「' + title + '」已移到第 ' + (destination + 1) + ' 位。';
-        const moved = cards.children[destination];
-        const sameDirection = moved.querySelectorAll('button')[step === -1 ? 0 : 1];
-        (sameDirection.disabled ? moved.querySelector('button:not(:disabled)') : sameDirection).focus();
-      });
-      controls.append(button);
+  }
+}
+
+function moveScene(sceneIndex, destination) {
+  if (!assessmentIsActive()) return;
+  const previous = placements.indexOf(sceneIndex);
+  if (destination === null) {
+    if (previous === -1) return;
+    placements[previous] = null;
+  } else if (previous !== destination) {
+    if (previous !== -1) placements[previous] = placements[destination];
+    placements[destination] = sceneIndex;
+  }
+  selectedScene = null;
+  renderCards();
+  const placed = placements.filter(index => index !== null).length;
+  status.textContent = '「' + scenes[sceneIndex].title + '」已' +
+    (destination === null ? '放回下方' : '放入第 ' + (destination + 1) + ' 格') +
+    '。已放置 ' + placed + '／8 張。';
+  const target = destination === null
+    ? cards.querySelector('[data-scene="' + sceneIndex + '"]')
+    : slots.children[destination].querySelector('button');
+  target.focus({ preventScroll: true });
+}
+
+function addDrag(button, sceneIndex) {
+  button.draggable = !sequenceLocked;
+  button.addEventListener('dragstart', event => {
+    if (!assessmentIsActive()) {
+      event.preventDefault();
+      return;
     }
-    card.append(art, copy, controls);
-    cards.append(card);
+    draggingScene = sceneIndex;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', scenes[sceneIndex].title);
+  });
+  button.addEventListener('dragend', () => {
+    draggingScene = null;
+    sequence.querySelector('.is-drop-target')?.classList.remove('is-drop-target');
   });
 }
 
-const shuffleButton = sequence.querySelector('.sequence-reset');
+function addDrop(target, destination) {
+  target.addEventListener('dragover', event => {
+    if (draggingScene === null || sequenceLocked) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    target.classList.add('is-drop-target');
+  });
+  target.addEventListener('dragleave', event => {
+    if (!target.contains(event.relatedTarget)) target.classList.remove('is-drop-target');
+  });
+  target.addEventListener('drop', event => {
+    if (draggingScene === null) return;
+    event.preventDefault();
+    target.classList.remove('is-drop-target');
+    const sceneIndex = draggingScene;
+    draggingScene = null;
+    moveScene(sceneIndex, destination);
+  });
+}
+
+function makeTile(sceneIndex, position) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'sequence-tile';
+  button.disabled = sequenceLocked;
+  const inSlot = position !== undefined;
+  if (inSlot) {
+    const number = document.createElement('span');
+    number.className = 'sequence-number';
+    number.textContent = position + 1;
+    button.append(number);
+  }
+  if (sceneIndex === null) {
+    button.append('空格');
+  } else {
+    const { title, summary } = scenes[sceneIndex];
+    button.dataset.scene = sceneIndex;
+    button.title = summary;
+    button.setAttribute('aria-pressed', String(selectedScene === sceneIndex));
+    const heading = document.createElement('span');
+    heading.className = 'sequence-title';
+    heading.textContent = title;
+    button.append(makeSceneArt(sceneIndex), heading);
+    addDrag(button, sceneIndex);
+  }
+  button.addEventListener('click', () => {
+    if (!assessmentIsActive()) return;
+    if (inSlot && selectedScene !== null && selectedScene !== sceneIndex) {
+      moveScene(selectedScene, position);
+    } else if (sceneIndex !== null) {
+      selectScene(sceneIndex);
+    }
+  });
+  return button;
+}
+
+function renderCards() {
+  slots.replaceChildren();
+  cards.replaceChildren();
+  returnButton.hidden = selectedScene === null || !placements.includes(selectedScene);
+  placements.forEach((sceneIndex, position) => {
+    const slot = document.createElement('li');
+    slot.append(makeTile(sceneIndex, position));
+    addDrop(slot, position);
+    if (!solution.hidden) {
+      const score = document.createElement('span');
+      score.className = 'item-score';
+      score.textContent = (sceneIndex === position ? '2.5' : '0') + '／2.5 分';
+      slot.append(score);
+    }
+    slots.append(slot);
+  });
+  trayOrder.filter(sceneIndex => !placements.includes(sceneIndex)).forEach(sceneIndex => {
+    const item = document.createElement('li');
+    item.append(makeTile(sceneIndex));
+    cards.append(item);
+  });
+}
+
+addDrop(tray, null);
+returnButton.addEventListener('click', () => moveScene(selectedScene, null));
 shuffleButton.addEventListener('click', () => {
   if (!assessmentIsActive()) return;
-  const previous = order.join();
+  const previous = trayOrder.join();
   do {
-    order = scenes.map((_, index) => index);
-    for (let index = order.length - 1; index > 0; index--) {
+    for (let index = trayOrder.length - 1; index > 0; index--) {
       const other = Math.floor(Math.random() * (index + 1));
-      [order[index], order[other]] = [order[other], order[index]];
+      [trayOrder[index], trayOrder[other]] = [trayOrder[other], trayOrder[index]];
     }
-  } while (order.join() === previous || order.every((sceneIndex, position) => sceneIndex === position));
-  solution.open = false;
-  sequenceTouched = false;
+  } while (trayOrder.join() === previous || trayOrder.every((sceneIndex, position) => sceneIndex === position));
+  placements.fill(null);
+  selectedScene = null;
   renderCards();
-  status.textContent = '卡片已打亂，可以重新作答。';
+  status.textContent = '圖卡已打亂。已放置 0／8 張。';
 });
 
 function setSequenceState(state) {
@@ -123,17 +223,20 @@ function setSequenceState(state) {
   shuffleButton.disabled = sequenceLocked;
   solution.hidden = state !== 'submitted';
   solution.open = false;
+  selectedScene = null;
+  draggingScene = null;
   if (state !== 'submitted') {
-    order = [...initialOrder];
-    sequenceTouched = false;
-    status.textContent = '';
+    trayOrder = [...initialOrder];
+    placements.fill(null);
+    status.textContent = '已放置 0／8 張。';
   }
   renderCards();
 }
 
 function gradeSequence() {
-  const correct = sequenceTouched ? order.filter((sceneIndex, position) => sceneIndex === position).length : 0;
-  status.textContent = sequenceTouched ? '排對 ' + correct + '／8 張' : '段落排序未作答';
+  const correct = placements.filter((sceneIndex, position) => sceneIndex === position).length;
+  status.textContent = placements.some(sceneIndex => sceneIndex !== null)
+    ? '排對 ' + correct + '／8 張。' : '段落排序未作答。';
   return correct * 2.5;
 }
 
