@@ -65,7 +65,43 @@ function makeQuestions(containerId, questions, points, scoreId) {
 }
 
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 5, 'author-score');
-const readingQuiz = makeQuestions('reading-questions', readingQuestions, 3, 'quiz-score');
+const readingGroups = [
+  ['情節與動機', [0, 1, 2, 18, 17]],
+  ['人物與證據', [3, 15, 19, 6, 16]],
+  ['意象與寫法', [7, 8, 13, 14, 5]],
+  ['文化與主旨', [4, 9, 10, 11, 12]]
+];
+const readingQuiz = makeQuestions('reading-questions',
+  readingGroups.flatMap(([, indexes]) => indexes.map(index => readingQuestions[index])),
+  3, 'quiz-score');
+const readingFields = [...document.querySelectorAll('#reading-questions fieldset')];
+const groupButtons = [...document.querySelectorAll('#reading-groups button')];
+const groupTitle = document.querySelector('#reading-group-title');
+let currentGroup = 0;
+
+function showReadingGroup(index, focus = false) {
+  currentGroup = index;
+  groupTitle.textContent = readingGroups[index][0];
+  readingFields.forEach((field, question) => {
+    field.hidden = Math.floor(question / 5) !== index;
+  });
+  groupButtons.forEach((button, group) => {
+    const answered = readingFields.slice(group * 5, group * 5 + 5)
+      .filter(field => field.querySelector('input:checked')).length;
+    button.textContent = readingGroups[group][0] + ' ' + answered + '／5';
+    button.setAttribute('aria-pressed', String(group === index));
+  });
+  document.querySelector('#previous-group').disabled = index === 0;
+  document.querySelector('#next-group').disabled = index === readingGroups.length - 1;
+  if (focus) groupTitle.focus();
+}
+
+groupButtons.forEach((button, index) => {
+  button.onclick = () => showReadingGroup(index, true);
+});
+document.querySelector('#previous-group').onclick = () => showReadingGroup(currentGroup - 1, true);
+document.querySelector('#next-group').onclick = () => showReadingGroup(currentGroup + 1, true);
+showReadingGroup(0);
 const scoreLabels = [...document.querySelectorAll('.section-score')].map(node => [node, node.textContent]);
 
 const phrases = document.querySelector('#phrases');
@@ -165,6 +201,7 @@ function startAssessment() {
   scoreLabels.forEach(([node, label]) => { node.textContent = label; });
   authorQuiz.reset(true);
   readingQuiz.reset(true);
+  showReadingGroup(0);
   setSequenceState(state);
   pairReset.onclick();
   pairResults.replaceChildren();
@@ -223,6 +260,7 @@ document.querySelector('#reading-questions').addEventListener('change', event =>
   if (!assessmentIsActive()) return;
   const answered = event.currentTarget.querySelectorAll('input:checked').length;
   readingProgress.textContent = '已作答 ' + answered + '／20 題';
+  showReadingGroup(currentGroup);
 });
 document.querySelector('#total-score').tabIndex = -1;
 document.querySelector('#author').tabIndex = -1;

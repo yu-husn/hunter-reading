@@ -80,3 +80,7 @@ label:has(input:checked), .pairs button[aria-pressed=true] {
   border-color: var(--rust);
 }
 .scene-card, .pairs button, .feedback { background: #f4eadb; color: var(--ink); }
+
+.reading-groups { display: flex; flex-wrap: wrap; gap: .5rem; }
+.reading-groups button[aria-pressed="true"] { background: var(--rust); color: white; }
+#reading-group-title { scroll-margin-top: 140px; }
