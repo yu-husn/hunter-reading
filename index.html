@@ -4,23 +4,33 @@
 #reading-focus details{border-top:1px solid #ddd9cb;padding:.65rem 0}
 #reading-focus summary{cursor:pointer;font-weight:650;color:#285541}
 #reading-focus details p{margin:.55rem 0 .25rem}
-</style><link rel="stylesheet" href="sequence.css"><header><nav><p>康軒國文・九年級上冊・第六課</p><h1>獵人</h1><p>瓦歷斯・諾幹｜閱讀理解</p><a href="#sequence">段落排序 ↓</a>　<a href="#reading-focus">文意重點 ↓</a>　<a href="#quiz">閱讀測驗 ↓</a>　<a href="#author">作者介紹 ↓</a>　<a href="#imagery">譬喻連連看 ↓</a></nav></header><main>
-<section><h2>上山之後，「我」怎麼看自己？</h2><p>請搭配課本閱讀。留意「我」為什麼想跟著老獵人上山、遇到考驗時怎麼選擇，以及山林故事如何在不同世代之間流傳。</p><details><summary>考題節選的情節提示</summary><p>敘事者請人向老獵人轉達自己想參與狩獵的願望。他期待狩獵後受到家族迎接，卻因一時心軟而覺得自己錯失了機會。文中也寫到老獵人帶領年輕人，讓山林故事得以流傳。</p></details></section>
-<section id="author"><h2>作者介紹｜瓦歷斯・諾幹</h2><p>瓦歷斯・諾幹是泰雅族作家，也曾擔任國小教師。他童年在父親的教養下累積了山林記憶，後來創作散文、新詩等作品，並創辦《獵人文化》雜誌，投入原住民族文化工作。</p><p>讀〈獵人〉時，可以留意老獵人怎麼帶領年輕人，以及山林經驗如何透過故事傳給下一代。</p><a href="https://indigenapedia-alcd.nccu.edu.tw/detail?cat=43&amp;id=11849&amp;race=0&amp;search=&amp;writer=" target="_blank" rel="noopener">資料來源｜臺灣原住民族事典</a></section><section id="sequence" aria-labelledby="sequence-heading">
-  <h2 id="sequence-heading">獵人試煉｜段落大意排序</h2>
+</style><link rel="stylesheet" href="sequence.css"><link rel="stylesheet" href="assessment.css"><header><nav><p>康軒國文・九年級上冊・第六課</p><h1>獵人</h1><p>瓦歷斯・諾幹｜閱讀理解</p><div class="assessment-nav"><a href="#author">1. 作者介紹</a><a href="#sequence">2. 段落大意排序</a><a href="#imagery">3. 譬喻連連看</a><a href="#quiz">4. 閱讀測驗</a></div></nav></header><main><div class="assessment-bar" aria-label="作答控制">
+  <div>剩餘 <span id="countdown" role="timer">20:00</span> <span class="score-label">總分 <output id="total-score">—／100</output></span></div>
+  <div class="assessment-actions">
+    <button type="button" id="start-assessment">開始作答</button>
+    <button type="button" id="submit-assessment" disabled>交卷</button>
+    <button type="button" id="restart-assessment" hidden>重新作答</button>
+    <button type="button" id="music-toggle" class="secondary" aria-pressed="false">開啟配樂</button>
+  </div>
+  <p id="assessment-message" role="status">作答時間 20 分鐘，時間到會自動交卷。</p>
+</div>
+
+<section id="author"><h2>作者介紹｜瓦歷斯・諾幹</h2><p>瓦歷斯・諾幹是泰雅族作家，也曾擔任國小教師。他童年在父親的教養下累積了山林記憶，後來創作散文、新詩等作品，並創辦《獵人文化》雜誌，投入原住民族文化工作。</p><p>讀〈獵人〉時，可以留意老獵人怎麼帶領年輕人，以及山林經驗如何透過故事傳給下一代。</p><a href="https://indigenapedia-alcd.nccu.edu.tw/detail?cat=43&amp;id=11849&amp;race=0&amp;search=&amp;writer=" target="_blank" rel="noopener">資料來源｜臺灣原住民族事典</a><p class="section-score" id="author-score">2 題，每題 5 分，共 10 分</p><div id="author-questions"></div></section><section id="sequence" aria-labelledby="sequence-heading">
+  <h2 id="sequence-heading">段落大意排序</h2>
   <p>依照事件實際發生的先後，使用「上移」或「下移」排列八張情節卡。想一想，哪一件事為下一件事提供了線索？</p>
   <div class="sequence-actions">
-    <button class="sequence-check" type="button">檢查順序</button>
+    <p class="section-score" id="sequence-score">8 張卡，每張位置正確得 2.5 分，共 20 分</p>
     <button class="sequence-reset secondary" type="button">打亂重玩</button>
     <p class="sequence-status" role="status" tabindex="-1"></p>
   </div>
   <ol class="sequence-cards" aria-label="目前的情節順序"></ol>
-  <details class="sequence-solution">
+  <details class="sequence-solution" hidden>
     <summary>查看正確順序與判斷線索</summary>
     <ol></ol>
   </details>
 </section>
-<section id="reading-focus" aria-labelledby="reading-focus-heading">
+<section id="imagery"><h2>譬喻連連看</h2><p>先選一句描寫，再選作者用來比喻它的圖片。交卷後查看分數與解析。</p><p class="section-score" id="imagery-score">5 組，每組 2 分，共 10 分</p><div class="pairs"><div><h3>課文描寫</h3><div id="phrases"></div></div><div><h3>意象圖片</h3><div id="pictures"></div></div></div><p id="pairFeedback" role="status">已配對 0／5 組</p><button id="pairReset" class="secondary">清除配對</button><ol id="pair-results" hidden></ol></section>
+<section id="quiz" aria-labelledby="quiz-heading"><h2 id="quiz-heading">閱讀測驗</h2><p class="section-score" id="quiz-score">20 題，每題 3 分，共 60 分</p><p id="reading-progress" aria-live="polite">已作答 0／20 題</p><div id="reading-questions"></div><div id="reading-focus" aria-labelledby="reading-focus-heading" hidden>
   <h2 id="reading-focus-heading">文意理解重點</h2>
   <p>先用課文中的一個細節回答，再展開看看那個細節支持什麼解讀。</p>
   <details>
@@ -48,91 +58,6 @@
     <p>鳥鳴只偶爾傳來，短暫的聲音使讀者更能感受到其餘時刻的寂靜。這是以聲襯靜，聲音描寫在這裡也有烘托環境的作用。</p>
   </details>
   <p><small>參考康軒九年級上冊第六課電子書第 81–82 頁的「問題思考」與「文意理解」，以及電子書連出的線上測驗。</small> <a href="https://wayground.com/admin/quiz/68a3df6edb2d1211cfe84859/l06" target="_blank" rel="noopener">查看康軒線上測驗</a></p>
-</section>
-<form id="quiz"><h2>閱讀測驗</h2><p id="progressText">已作答 0／8 題</p><progress id="progress" max="8" value="0" aria-label="作答進度"></progress><div id="questions"></div><button>交卷看解析</button> <button type="reset" class="secondary">重新作答</button><p id="result" role="status" tabindex="-1"></p></form>
-<section id="imagery"><h2>譬喻意象連連看</h2><p>先選一句描寫，再選作者用來比喻它的圖片。配對後可以立即查看解析。</p><div class="pairs"><div><h3>課文描寫</h3><div id="phrases"></div></div><div><h3>意象圖片</h3><div id="pictures"></div></div></div><p id="pairFeedback" role="status">已配對 0／5 組</p><button id="pairReset" class="secondary">重玩配對</button></section><section><h2>找一句話，支持你的解讀</h2><label for="evidence">你認為敘事者最在意的是獵物、家族認同，還是其他事？寫下你的判斷，指出一處課文細節，並解釋兩者的關係。</label><textarea id="evidence" placeholder="我認為……。文中提到……，這讓我看出……。"></textarea><details><summary>查看作答示例</summary><p>我認為他在意家族認同。因為他想到狩獵後家族會以戰歌和小米酒迎接，可見他期待自己的成長能被家人看見。因此，他錯失機會時的失落，也和這份期待有關。</p><p>自我檢查：有提出判斷嗎？有指出具體情節嗎？有說明情節如何支持判斷嗎？</p></details></section>
+<div><h3>找一句話，支持你的解讀</h3><label for="evidence">你認為敘事者最在意的是獵物、家族認同，還是其他事？寫下你的判斷，指出一處課文細節，並解釋兩者的關係。</label><textarea id="evidence" placeholder="我認為……。文中提到……，這讓我看出……。"></textarea><details><summary>查看作答示例</summary><p>我認為他在意家族認同。因為他想到狩獵後家族會以戰歌和小米酒迎接，可見他期待自己的成長能被家人看見。因此，他錯失機會時的失落，也和這份期待有關。</p><p>自我檢查：有提出判斷嗎？有指出具體情節嗎？有說明情節如何支持判斷嗎？</p></details></div></div></section>
 <footer><small>題目為自編練習，參考高雄市立中山國中公開段考題組的段落重組與訊息推論題型。</small><br><a href="https://www2.csjh.kh.edu.tw/teach/exam/106%E4%B8%8B%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83/%E5%9C%8B%E6%96%87/%E5%9C%8B%E6%96%873/%E4%B8%AD%E5%B1%B1%E5%9C%8B%E4%B8%AD106%E5%AD%B8%E5%B9%B4%E5%BA%A6%E7%AC%AC%E4%BA%8C%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83%E4%B8%89%E5%B9%B4%E7%B4%9A%E5%9C%8B%E6%96%87%E7%A7%91%E8%A9%A6%E9%A1%8C.pdf" target="_blank" rel="noopener">參考考題</a> · <a href="https://digitalmaster.knsh.com.tw/all/video/j/mandarin_page.html?l1=9%E4%B8%8A&amp;l2=L06%E3%80%80%E7%8D%B5%E4%BA%BA" target="_blank" rel="noopener">康軒課文影音</a></footer></main>
-<script>
-const items=[
-['作者資料','根據作者介紹，哪項行動最直接表現瓦歷斯・諾幹對原住民族文化的投入？',['擔任國小教師','創辦《獵人文化》雜誌','跟隨老獵人上山','練習釀造小米酒'],1,'介紹指出，他創辦《獵人文化》雜誌，投入原住民族文化工作。'],
-['作者與作品','若從作者的山林記憶出發，課文哪個細節最適合用來討論文化如何傳承？',['敘事者為自己感到懊惱','天空被比作下撲的蒼鷹','老獵人帶領年輕人，山林故事因此流傳','敘事者依照交代準備鹽巴'],2,'老獵人的帶領與故事的流傳，具體寫出山林經驗如何由一代傳給下一代。'],
-
-['擷取訊息','老獵人答應帶「我」上山後，要「我」準備什麼？',['戰歌和小米酒','番刀和鹽巴','火把和繩索','弓箭和乾糧'],1,'找老獵人離開前的交代。戰歌和小米酒出現在「我」對家族迎接的想像中。'],
-['事件順序','依照事件發生的先後，下列哪個排列最合理？',['上山準備 → 懊惱 → 託人轉達','懊惱 → 託人轉達 → 上山準備','託人轉達 → 上山準備 → 懊惱','上山準備 → 託人轉達 → 懊惱'],2,'先有人替「我」轉達願望，才有老獵人對上山準備的交代。懊惱是事後對自己選擇的反應。'],
-['推論動機','「我」想到狩獵後家人會以戰歌和小米酒迎接，這個細節最能支持哪項推論？',['「我」期待家族見證自己的成長','「我」擔心家中沒有足夠的食物','「我」想學習釀造小米酒','「我」希望老獵人代替自己接受歡迎'],0,'迎接發生在家族成員之間，因此這個想像能支持「我」期待獲得認同的推論。'],
-['推論情感','「我」因一時心軟而懊惱，最能看出他面對什麼拉扯？',['想學戰歌，卻怕在家人面前唱錯','想早點上山，卻對準備工作感到厭煩','想跟老獵人說話，卻怕打擾他','期待完成狩獵，臨到選擇時卻於心不忍'],3,'將事後的懊惱和當下的心軟放在一起讀，可以看出原有期待與當下感受之間的落差。'],
-['統整文意','課文寫到老獵人引領年輕人，也寫到山林故事流傳。這兩個細節放在一起，最能說明什麼？',['故事必須寫下來才有機會保存','山林經驗能在長輩帶領下傳給下一代','年輕人只能在狩獵成功後聽故事','山林故事的用途是記錄每次狩獵的成果'],1,'老獵人帶領年輕人，提供共同經歷與聽故事的機會，讓經驗得以跨世代傳遞。'],
-['評析寫法','把家族迎接的想像與事後的懊惱放在同一篇文章裡，有什麼效果？',['交代家族成員的親屬關係','將敘事焦點改成小米酒的製作','讓讀者感受到「我」的期待落空','說明老獵人為什麼反對成年禮'],2,'先讓讀者看見「我」期待的畫面，再寫出懊惱，能讓讀者理解那次選擇對他的分量。']
-];
-const form=document.querySelector('#quiz'), result=document.querySelector('#result');
-document.querySelector('#questions').innerHTML=items.map(([skill,prompt,options],i)=>
-'<fieldset aria-labelledby="q'+i+'"><small>'+skill+'</small><h3 id="q'+i+'">'+(i+1)+'．'+prompt+'</h3>'+
-options.map((option,j)=>'<label class="option"><input type="radio" name="q'+i+'" value="'+j+'">'+String.fromCharCode(65+j)+'．'+option+'</label>').join('')+'<p class="feedback" hidden></p></fieldset>').join('');
-const fields=[...form.querySelectorAll('fieldset')];
-function update(){
- const answered=form.querySelectorAll('input:checked').length;
- document.querySelector('#progress').value=answered;
- document.querySelector('#progressText').textContent='已作答 '+answered+'／'+items.length+' 題';
-}
-function clearFeedback(){
- result.textContent='';
- fields.forEach(field=>field.querySelector('.feedback').hidden=true);
-}
-form.addEventListener('change',()=>{update();clearFeedback()});
-form.addEventListener('reset',()=>requestAnimationFrame(()=>{clearFeedback();update()}));
-form.addEventListener('submit',event=>{
- event.preventDefault();
- const missing=fields.find(field=>!field.querySelector('input:checked'));
- if(missing){result.textContent='還有題目未作答，請完成後再交卷。';missing.querySelector('input').focus();return;}
- let score=0;
- fields.forEach((field,i)=>{
-  const correct=items[i][3], right=Number(field.querySelector('input:checked').value)===correct;
-  score+=Number(right);
-  const feedback=field.querySelector('.feedback');
-  feedback.textContent=(right?'答對了。':'正確答案是 '+String.fromCharCode(65+correct)+'。')+items[i][4];
-  feedback.hidden=false;
- });
- result.textContent='答對 '+score+'／'+items.length+' 題。各題解析已顯示在選項下方。';
- result.focus();
-});
-const pairs=[
- ['山脊側邊隆起的輪廓','肩膀般的山脊','作者把山脈隆起的輪廓比作人的肩膀。','0% 0%'],
- ['天色迅速壓下的動態','蒼鷹','以蒼鷹展翅下撲的動作，寫出夜色降臨的速度與壓迫感。','50% 0%'],
- ['老獵人的手乾瘦而粗糙','枯藤','以枯藤寫出手的輪廓與質感。','100% 0%'],
- ['諾基斯的身影輕快地消失在林中','蝙蝠','以蝙蝠飛入夜色的畫面，寫出諾基斯身影消失得輕快。','0% 100%'],
- ['諾基斯的命令一下子傳到「我」耳中','流星','以流星一閃而過，寫出命令來得又快又突然。','50% 100%']
-];
-let selected=null;
-const matched=new Set(), pairFeedback=document.querySelector('#pairFeedback');
-function renderPairs(){
- const phrases=document.querySelector('#phrases'),pictures=document.querySelector('#pictures');
- phrases.replaceChildren();pictures.replaceChildren();
- pairs.forEach(([phrase],i)=>{
-  const button=document.createElement('button');
-  button.textContent=phrase+(matched.has(i)?' ✓':'');
-  button.disabled=matched.has(i);
-  button.setAttribute('aria-pressed',String(selected===i));
-  button.onclick=()=>{selected=i;phrases.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));pairFeedback.textContent='已選「'+phrase+'」，請選右欄的圖片。';};
-  phrases.append(button);
- });
- [2,4,0,3,1].forEach(i=>{
-  const button=document.createElement('button');
-  const art=document.createElement('span');
-  art.className='pair-art';
-  art.style.backgroundPosition=pairs[i][3];
-  art.setAttribute('aria-hidden','true');
-  button.append(art,pairs[i][1]+(matched.has(i)?' ✓':''));
-  button.disabled=matched.has(i);
-  button.onclick=()=>{
-   if(selected===null){pairFeedback.textContent='請先選一句課文描寫。';return;}
-   if(selected!==i){pairFeedback.textContent='這組還不相符。想想兩者相似的是形狀、動態，還是質感。';return;}
-   matched.add(i);selected=null;renderPairs();
-   pairFeedback.textContent='已配對 '+matched.size+'／'+pairs.length+' 組。'+pairs[i][2];
-   (phrases.querySelector('button:not(:disabled)')||document.querySelector('#pairReset')).focus();
-  };
-  pictures.append(button);
- });
-}
-document.querySelector('#pairReset').onclick=()=>{selected=null;matched.clear();renderPairs();pairFeedback.textContent='已配對 0／5 組';document.querySelector('#phrases button').focus();};
-renderPairs();
-</script><script src="sequence.js"></script></html>
+<script src="questions.js"></script><script src="sequence.js"></script><script src="assessment.js"></script></html>

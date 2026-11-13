@@ -47,6 +47,8 @@ const status = sequence.querySelector('.sequence-status');
 const solution = sequence.querySelector('.sequence-solution');
 const initialOrder = [4, 1, 6, 3, 7, 0, 5, 2];
 let order = [...initialOrder];
+let sequenceTouched = false;
+let sequenceLocked = true;
 
 function renderCards() {
   cards.replaceChildren();
@@ -64,6 +66,13 @@ function renderCards() {
     const description = document.createElement('p');
     description.textContent = summary;
     copy.append(heading, description);
+    if (sequenceLocked && !solution.hidden) {
+      const points = sequenceTouched && sceneIndex === position ? 2.5 : 0;
+      const score = document.createElement('p');
+      score.className = 'item-score';
+      score.textContent = points + '／2.5 分';
+      copy.append(score);
+    }
     const controls = document.createElement('div');
     controls.className = 'scene-controls';
     for (const step of [-1, 1]) {
@@ -74,8 +83,10 @@ function renderCards() {
       button.className = 'secondary';
       button.textContent = (step === -1 ? '↑ ' : '↓ ') + label;
       button.setAttribute('aria-label', label + '：' + title);
-      button.disabled = destination < 0 || destination >= order.length;
+      button.disabled = sequenceLocked || destination < 0 || destination >= order.length;
       button.addEventListener('click', () => {
+        if (!assessmentIsActive()) return;
+        sequenceTouched = true;
         [order[position], order[destination]] = [order[destination], order[position]];
         renderCards();
         status.textContent = '「' + title + '」已移到第 ' + (destination + 1) + ' 位。';
@@ -90,15 +101,9 @@ function renderCards() {
   });
 }
 
-sequence.querySelector('.sequence-check').addEventListener('click', () => {
-  const correct = order.filter((sceneIndex, position) => sceneIndex === position).length;
-  status.textContent = correct === scenes.length
-    ? '全部排對了！'
-    : '有 ' + correct + '／' + scenes.length + ' 張卡片在正確位置。可以繼續調整。';
-  status.focus();
-});
-
-sequence.querySelector('.sequence-reset').addEventListener('click', () => {
+const shuffleButton = sequence.querySelector('.sequence-reset');
+shuffleButton.addEventListener('click', () => {
+  if (!assessmentIsActive()) return;
   const previous = order.join();
   do {
     order = scenes.map((_, index) => index);
@@ -108,9 +113,29 @@ sequence.querySelector('.sequence-reset').addEventListener('click', () => {
     }
   } while (order.join() === previous || order.every((sceneIndex, position) => sceneIndex === position));
   solution.open = false;
+  sequenceTouched = false;
   renderCards();
   status.textContent = '卡片已打亂，可以重新作答。';
 });
+
+function setSequenceState(state) {
+  sequenceLocked = state !== 'active';
+  shuffleButton.disabled = sequenceLocked;
+  solution.hidden = state !== 'submitted';
+  solution.open = false;
+  if (state !== 'submitted') {
+    order = [...initialOrder];
+    sequenceTouched = false;
+    status.textContent = '';
+  }
+  renderCards();
+}
+
+function gradeSequence() {
+  const correct = sequenceTouched ? order.filter((sceneIndex, position) => sceneIndex === position).length : 0;
+  status.textContent = sequenceTouched ? '排對 ' + correct + '／8 張' : '段落排序未作答';
+  return correct * 2.5;
+}
 
 const explanations = solution.querySelector('ol');
 scenes.forEach(({ title, clue }) => {
@@ -120,4 +145,4 @@ scenes.forEach(({ title, clue }) => {
   item.append(heading, '。' + clue);
   explanations.append(item);
 });
-renderCards();
+setSequenceState('ready');

@@ -1,0 +1,29 @@
+.assessment-nav, .assessment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.assessment-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 12px;
+  background: #fffdf7;
+  border-bottom: 1px solid #ddd9cb;
+  box-shadow: 0 4px 12px #23382d12;
+}
+
+.assessment-actions { gap: 6px; margin-top: 5px; }
+.assessment-actions button { padding: 5px 12px; }
+.assessment-bar p { margin: 4px 0 0; font-size: .88rem; }
+#countdown, #total-score { font-weight: 750; font-variant-numeric: tabular-nums; }
+.score-label { margin-left: 1rem; }
+.section-score, .item-score { font-weight: 650; }
+#author, #sequence, #imagery, #quiz, #reading-focus, fieldset, .scene-card { scroll-margin-top: 140px; }
+#sequence .sequence-actions { position: static; }
+fieldset legend { font-weight: 700; padding: 0 6px; }
+fieldset:disabled { opacity: 1; }
+button:disabled { cursor: default; opacity: .6; }
+#pair-results li + li { margin-top: .65rem; }
+#reading-focus { margin-top: 2rem; }
