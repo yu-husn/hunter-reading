@@ -32,6 +32,27 @@ const roles = {
 let playerRole = null;
 const submissionHint = document.querySelector('#submission-hint');
 const passResult = document.querySelector('#pass-result');
+const hunterEnding = document.querySelector('#hunter-ending');
+const endingReplyFrame = hunterEnding.querySelector('.ending-reply-frame');
+const replayEnding = document.querySelector('#replay-ending');
+let endingPlayback = 0;
+
+async function playHunterEnding() {
+  const playback = ++endingPlayback;
+  hunterEnding.classList.remove('ending-playing');
+  try {
+    await endingReplyFrame.decode();
+  } catch {
+    return;
+  }
+  if (playback !== endingPlayback || hunterEnding.hidden) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (playback === endingPlayback && !hunterEnding.hidden) {
+      hunterEnding.classList.add('ending-playing');
+    }
+  }));
+}
+replayEnding.onclick = playHunterEnding;
 const restartButton = document.querySelector('#restart-assessment');
 const readingProgress = document.querySelector('#reading-progress');
 let state = 'ready';
@@ -439,6 +460,8 @@ function startAssessment() {
   document.querySelector('#reading-focus').hidden = true;
   document.querySelector('#total-score').textContent = '—／100';
   passResult.hidden = true;
+  hunterEnding.hidden = true;
+  hunterEnding.classList.remove('ending-playing');
   readingProgress.textContent = '已作答 0／20 題';
   startButton.hidden = true;
   introStart.textContent = '返回闖關';
@@ -469,6 +492,7 @@ function finishAssessment(expired) {
   passResult.textContent = passed ? '闖關通過' : '尚未通過';
   passResult.dataset.passed = String(passed);
   passResult.hidden = false;
+  hunterEnding.hidden = !passed;
   document.querySelector('#reading-focus').hidden = false;
   message.textContent = (expired ? '時間到，已自動交卷。' : '已交卷。') +
     (passed ? '已達 60 分，闖關通過。' : '尚未達到 60 分，可查看解析後重新作答。');
@@ -476,7 +500,13 @@ function finishAssessment(expired) {
   updateSubmissionControls();
   restartButton.hidden = false;
   introStart.textContent = '查看作答結果';
-  document.querySelector('#total-score').focus();
+  if (passed) {
+    playHunterEnding();
+    hunterEnding.scrollIntoView();
+    hunterEnding.querySelector('h2').focus({ preventScroll: true });
+  } else {
+    document.querySelector('#total-score').focus();
+  }
 }
 
 function beginTimedAttempt() {
@@ -537,7 +567,7 @@ new ResizeObserver(([entry]) => {
 showStationFromAddress();
 
 const musicButtons = [...document.querySelectorAll('#music-toggle, #opening-music-toggle')];
-const music = new Audio('drums-of-the-deep.mp3');
+const music = new Audio('ancient-rite.mp3');
 music.loop = true;
 music.preload = 'none';
 music.volume = 0.3;

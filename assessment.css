@@ -149,10 +149,12 @@ header p { color: #f0d6b3; }
   background: url('opening-walk.png') 0 0 / 400% 100% no-repeat;
 }
 .story-hunter.is-walking {
-  animation: hunter-enters 4.2s linear both;
+  --walk-duration: 10s;
+  --walk-cycles: 12;
+  animation: hunter-enters var(--walk-duration) linear both;
 }
 .is-walking .story-walk-frame {
-  animation: hunter-steps .84s steps(4, jump-none) 5;
+  animation: hunter-steps calc(var(--walk-duration) / var(--walk-cycles)) steps(4, jump-none) var(--walk-cycles);
 }
 @keyframes hunter-enters {
   from { transform: translate(-10%, 4%) scale(1); }
@@ -203,6 +205,34 @@ header p { color: #f0d6b3; }
 .role-options:disabled .role-option { cursor: default; }
 #current-role { font-size: .85rem; }
 #reading-role-cue { color: var(--rust); font-weight: 650; }
+.opening-stages { margin: .65rem 0; padding-inline-start: 1.4em; color: #f0d6b3; }
+#hunter-ending { max-width: 760px; margin-inline: auto; scroll-margin-top: var(--assessment-offset, 170px); }
+#hunter-ending img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.ending-scene { position: relative; }
+#hunter-ending :is(.ending-reply-frame, .ending-mouth) { position: absolute; inset: 0; opacity: 0; }
+.ending-elder-mouth { clip-path: ellipse(3.3% 3.4% at 35.1% 34.1%); }
+.ending-author-mouth { clip-path: ellipse(3.2% 3.2% at 74% 38.3%); }
+.ending-dialogue { margin-block: 1rem; }
+.ending-dialogue p { margin: .35rem 0; padding: .45rem .65rem; border-inline-start: 4px solid transparent; }
+.ending-playing .ending-reply-frame { animation: ending-reply 9s steps(1, end) both; }
+.ending-playing .ending-elder-mouth { animation: ending-mouth .75s steps(1, end) 6; }
+.ending-playing .ending-author-mouth { animation: ending-mouth .75s steps(1, end) 4.5s 6; }
+.ending-playing .ending-dialogue p:first-child { animation: ending-first-line 9s steps(1, end) both; }
+.ending-playing .ending-dialogue p:last-child { animation: ending-second-line 9s steps(1, end) both; }
+@keyframes ending-reply { 50%, 100% { opacity: 1; } }
+@keyframes ending-mouth { 50% { opacity: 1; } }
+@keyframes ending-first-line {
+  0% { border-color: var(--rust); background: #f4eadb; }
+  50%, 100% { border-color: transparent; background: transparent; }
+}
+@keyframes ending-second-line {
+  0%, 100% { border-color: transparent; background: transparent; }
+  50% { border-color: var(--rust); background: #f4eadb; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ending-playing :is(.ending-reply-frame, .ending-mouth, .ending-dialogue p) { animation: none; }
+  #replay-ending { display: none; }
+}
 @media (max-width: 1180px) {
   .story-opening {
     --opening-scene-height: clamp(240px, 58vw, 430px);

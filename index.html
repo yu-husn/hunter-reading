@@ -3,7 +3,7 @@
 #reading-focus details{border-top:1px solid #ddd9cb;padding:.65rem 0}
 #reading-focus summary{cursor:pointer;font-weight:650;color:#285541}
 #reading-focus details p{margin:.55rem 0 .25rem}
-</style><link rel="stylesheet" href="sequence.css?v=journey-1"><link rel="stylesheet" href="assessment.css?v=walk-3"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+</style><link rel="stylesheet" href="sequence.css?v=journey-1"><link rel="stylesheet" href="assessment.css?v=finale-2"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
 .assessment-nav a{display:grid;gap:8px;padding:8px;text-align:center;align-content:start}
 .station-art{display:block;width:100%;aspect-ratio:3/2;background-image:url('trial-scenes-manga.png');background-size:400% auto;border-radius:3px}
 .station-art.departure{background-position:0 16.667%}
@@ -23,7 +23,13 @@
   <div class="story-copy">
     <h2>天快亮了，準備入山</h2>
     <p>「我」想補上未曾參與成年禮的遺憾，跟著老獵人諾基斯來到山中。當他讓「我」獨自進林，這場試煉才真正開始。</p>
-    <p>從出發前一路走到營火旁，最後用課文線索完成閱讀測驗。按下按鈕後開始 20 分鐘倒數。</p>
+    <ol class="opening-stages" aria-label="四個關卡">
+      <li><strong>出發前</strong>｜認識作家瓦歷斯・諾幹。</li>
+      <li><strong>循著足跡</strong>｜依先後排列八張情節圖卡。</li>
+      <li><strong>山林意象</strong>｜為五句描寫配對譬喻圖卡。</li>
+      <li><strong>回到營火旁</strong>｜根據課文線索完成二十題閱讀測驗。</li>
+    </ol>
+    <p>選好角色後開始 20 分鐘倒數。</p>
     <form id="role-form">
       <fieldset class="role-options">
         <legend>你要以誰的身分入山？</legend>
@@ -135,7 +141,21 @@
   </details>
   <p><small>參考康軒九年級上冊第六課電子書第 81–82 頁的「問題思考」與「文意理解」，以及電子書連出的線上測驗。</small> <a href="https://wayground.com/admin/quiz/68a3df6edb2d1211cfe84859/l06" target="_blank" rel="noopener">查看康軒線上測驗</a></p>
 <div><h3>找一句話，支持你的解讀</h3><label for="evidence">你認為敘事者最在意的是獵物、家族認同，還是其他事？寫下你的判斷，指出一處課文細節，並解釋兩者的關係。</label><textarea id="evidence" placeholder="我認為……。文中提到……，這讓我看出……。"></textarea><details><summary>查看作答示例</summary><p>我認為他在意家族認同。因為他想到狩獵後家族會以戰歌和小米酒迎接，可見他期待自己的成長能被家人看見。因此，他錯失機會時的失落，也和這份期待有關。</p><p>自我檢查：有提出判斷嗎？有指出具體情節嗎？有說明情節如何支持判斷嗎？</p></details></div></div></section>
+<section id="hunter-ending" aria-labelledby="hunter-ending-title" hidden>
+  <h2 id="hunter-ending-title" tabindex="-1">闖關通過｜成為獵人</h2>
+  <div class="ending-scene">
+    <img src="hunter-ending.png" width="1536" height="1024" loading="lazy" alt="營火旁，老獵人諾基斯把手放在作者肩上，兩人交談。">
+    <img class="ending-mouth ending-elder-mouth" src="hunter-ending-reply.png" width="1536" height="1024" loading="lazy" alt="">
+    <img class="ending-reply-frame" src="hunter-ending-reply.png" width="1536" height="1024" loading="lazy" alt="">
+    <img class="ending-mouth ending-author-mouth" src="hunter-ending.png" width="1536" height="1024" loading="lazy" alt="">
+  </div>
+  <div class="ending-dialogue" aria-label="營火旁的想像對話">
+    <p><strong>諾基斯</strong>　你願意停下來，替山林裡的生命多想一步。</p>
+    <p><strong>作者「我」</strong>　我明白了。勇敢走進山林，也要有智慧與愛，才知道何時該放手。</p>
+  </div>
+  <button type="button" id="replay-ending" class="secondary">重播營火對話</button>
+</section>
 <p id="submission-hint" role="status" hidden></p>
 <div class="station-controls" role="group" aria-label="切換關卡"><button type="button" class="secondary" id="previous-station" disabled>上一站</button><span id="station-progress">第 1 站／共 4 站</span><button type="button" id="next-station">下一站</button></div>
-<footer><small>題目為自編練習，參考高雄市立中山國中公開段考題組的段落重組與訊息推論題型。</small><br><a href="https://www2.csjh.kh.edu.tw/teach/exam/106%E4%B8%8B%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83/%E5%9C%8B%E6%96%87/%E5%9C%8B%E6%96%873/%E4%B8%AD%E5%B1%B1%E5%9C%8B%E4%B8%AD106%E5%AD%B8%E5%B9%B4%E5%BA%A6%E7%AC%AC%E4%BA%8C%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83%E4%B8%89%E5%B9%B4%E7%B4%9A%E5%9C%8B%E6%96%87%E7%A7%91%E8%A9%A6%E9%A1%8C.pdf" target="_blank" rel="noopener">參考考題</a> · <a href="https://digitalmaster.knsh.com.tw/all/video/j/mandarin_page.html?l1=9%E4%B8%8A&amp;l2=L06%E3%80%80%E7%8D%B5%E4%BA%BA" target="_blank" rel="noopener">康軒課文影音</a><br><small>配樂 <a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400021">Drums of the Deep</a> — Kevin MacLeod，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></small></footer></main>
-<script src="questions.js?v=reading-3"></script><script src="sequence.js?v=slots-2"></script><script src="assessment.js?v=finish-1"></script></html>
+<footer><small>題目為自編練習，參考高雄市立中山國中公開段考題組的段落重組與訊息推論題型。</small><br><a href="https://www2.csjh.kh.edu.tw/teach/exam/106%E4%B8%8B%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83/%E5%9C%8B%E6%96%87/%E5%9C%8B%E6%96%873/%E4%B8%AD%E5%B1%B1%E5%9C%8B%E4%B8%AD106%E5%AD%B8%E5%B9%B4%E5%BA%A6%E7%AC%AC%E4%BA%8C%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83%E4%B8%89%E5%B9%B4%E7%B4%9A%E5%9C%8B%E6%96%87%E7%A7%91%E8%A9%A6%E9%A1%8C.pdf" target="_blank" rel="noopener">參考考題</a> · <a href="https://digitalmaster.knsh.com.tw/all/video/j/mandarin_page.html?l1=9%E4%B8%8A&amp;l2=L06%E3%80%80%E7%8D%B5%E4%BA%BA" target="_blank" rel="noopener">康軒課文影音</a><br><small>配樂 <a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900048">Ancient Rite</a> — Kevin MacLeod，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></small></footer></main>
+<script src="questions.js?v=reading-3"></script><script src="sequence.js?v=slots-2"></script><script src="assessment.js?v=finale-2"></script></html>
