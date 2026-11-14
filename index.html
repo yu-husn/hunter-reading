@@ -3,7 +3,7 @@
 #reading-focus details{border-top:1px solid #ddd9cb;padding:.65rem 0}
 #reading-focus summary{cursor:pointer;font-weight:650;color:#285541}
 #reading-focus details p{margin:.55rem 0 .25rem}
-</style><link rel="stylesheet" href="sequence.css?v=journey-1"><link rel="stylesheet" href="assessment.css?v=journey-1"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+</style><link rel="stylesheet" href="sequence.css?v=journey-1"><link rel="stylesheet" href="assessment.css?v=walk-3"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
 .assessment-nav a{display:grid;gap:8px;padding:8px;text-align:center;align-content:start}
 .station-art{display:block;width:100%;aspect-ratio:3/2;background-image:url('trial-scenes-manga.png');background-size:400% auto;border-radius:3px}
 .station-art.departure{background-position:0 16.667%}
@@ -11,8 +11,14 @@
 .station-art.hawk{background-image:url('imagery-manga.png');background-size:300% auto;background-position:50% 12.5%}
 .station-art.campfire{background-position:100% 83.333%}
 @media(max-width:620px){.assessment-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}</style><header><nav><p>康軒國文・九年級上冊・第六課</p><h1>獵人</h1><p>瓦歷斯・諾幹｜山林試煉</p><div class="story-opening">
-  <div class="story-visual" aria-hidden="true">
-    <img class="story-hunter" src="opening-hunter.png" alt="">
+  <div class="story-visual" role="img" aria-label="作者沿著晨光中的山徑往森林深處走">
+    <div class="story-landscape">
+      <div class="story-hunter is-walking"><div class="story-walk-frame"></div></div>
+    </div>
+  </div>
+  <div class="story-controls">
+    <button type="button" id="replay-walk" class="story-replay">重播入山動畫</button>
+    <button type="button" id="opening-music-toggle">關閉配樂</button>
   </div>
   <div class="story-copy">
     <h2>天快亮了，準備入山</h2>
@@ -36,16 +42,16 @@
 </div><div class="assessment-nav" aria-label="四站導覽"><a href="#author"><span class="station-art departure" aria-hidden="true"></span><span>1. 出發前<small>作家介紹</small></span></a><a href="#sequence"><span class="station-art tracks" aria-hidden="true"></span><span>2. 循著足跡<small>段落大意排序</small></span></a><a href="#imagery"><span class="station-art hawk" aria-hidden="true"></span><span>3. 山林意象<small>譬喻連連看</small></span></a><a href="#quiz"><span class="station-art campfire" aria-hidden="true"></span><span>4. 回到營火旁<small>閱讀測驗</small></span></a></div></nav></header><main><div class="assessment-bar" aria-label="作答控制">
   <div class="assessment-time">
     <div class="countdown-display"><span id="countdown-label">剩餘時間</span> <span id="countdown" role="timer" aria-labelledby="countdown-label">20:00</span> <span id="countdown-warning" role="status"></span></div>
-    <span id="current-role" hidden></span><span class="score-label">總分 <output id="total-score">—／100</output></span>
+    <span id="current-role" hidden></span><span class="score-label">總分 <output id="total-score">—／100</output><span id="pass-result" hidden></span></span>
   </div>
   <progress id="countdown-progress" aria-label="剩餘作答時間比例" max="1200" value="1200"></progress>
   <div class="assessment-actions">
     <button type="button" id="start-assessment">開始作答</button>
     <button type="button" id="submit-assessment" disabled>交卷</button>
     <button type="button" id="restart-assessment" hidden>重新作答</button>
-    <button type="button" id="music-toggle" class="secondary" aria-pressed="false">開啟配樂</button>
+    <button type="button" id="music-toggle" class="secondary">關閉配樂</button>
   </div>
-  <p id="assessment-message" role="status">作答時間 20 分鐘，時間到會自動交卷。</p>
+  <p id="assessment-message" role="status">作答時間 20 分鐘，時間到會自動交卷。總分達 60 分即可通過。</p>
 </div>
 
 <section id="author" aria-labelledby="author-heading" tabindex="-1"><h2 id="author-heading">出發前｜作家介紹</h2><p>瓦歷斯・諾幹是泰雅族作家，也曾擔任國小教師。他童年在父親的教養下累積了山林記憶，後來創作散文、新詩等作品，並創辦《獵人文化》雜誌，投入原住民族文化工作。</p><p>讀〈獵人〉時，可以留意老獵人怎麼帶領年輕人，以及山林經驗如何透過故事傳給下一代。</p><a href="https://indigenapedia-alcd.nccu.edu.tw/detail?cat=43&amp;id=11849&amp;race=0&amp;search=&amp;writer=" target="_blank" rel="noopener">資料來源｜臺灣原住民族事典</a><p class="section-score" id="author-score">2 題，每題 5 分，共 10 分</p><div id="author-questions"></div></section><section id="sequence" aria-labelledby="sequence-heading" tabindex="-1" hidden>
@@ -132,4 +138,4 @@
 <div><h3>找一句話，支持你的解讀</h3><label for="evidence">你認為敘事者最在意的是獵物、家族認同，還是其他事？寫下你的判斷，指出一處課文細節，並解釋兩者的關係。</label><textarea id="evidence" placeholder="我認為……。文中提到……，這讓我看出……。"></textarea><details><summary>查看作答示例</summary><p>我認為他在意家族認同。因為他想到狩獵後家族會以戰歌和小米酒迎接，可見他期待自己的成長能被家人看見。因此，他錯失機會時的失落，也和這份期待有關。</p><p>自我檢查：有提出判斷嗎？有指出具體情節嗎？有說明情節如何支持判斷嗎？</p></details></div></div></section>
 <div class="station-controls" role="group" aria-label="切換關卡"><button type="button" class="secondary" id="previous-station" disabled>上一站</button><span id="station-progress">第 1 站／共 4 站</span><button type="button" id="next-station">下一站</button></div>
 <footer><small>題目為自編練習，參考高雄市立中山國中公開段考題組的段落重組與訊息推論題型。</small><br><a href="https://www2.csjh.kh.edu.tw/teach/exam/106%E4%B8%8B%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83/%E5%9C%8B%E6%96%87/%E5%9C%8B%E6%96%873/%E4%B8%AD%E5%B1%B1%E5%9C%8B%E4%B8%AD106%E5%AD%B8%E5%B9%B4%E5%BA%A6%E7%AC%AC%E4%BA%8C%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83%E4%B8%89%E5%B9%B4%E7%B4%9A%E5%9C%8B%E6%96%87%E7%A7%91%E8%A9%A6%E9%A1%8C.pdf" target="_blank" rel="noopener">參考考題</a> · <a href="https://digitalmaster.knsh.com.tw/all/video/j/mandarin_page.html?l1=9%E4%B8%8A&amp;l2=L06%E3%80%80%E7%8D%B5%E4%BA%BA" target="_blank" rel="noopener">康軒課文影音</a><br><small>配樂 <a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400021">Drums of the Deep</a> — Kevin MacLeod，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></small></footer></main>
-<script src="questions.js?v=reading-3"></script><script src="sequence.js?v=slots-2"></script><script src="assessment.js?v=journey-1"></script></html>
+<script src="questions.js?v=reading-3"></script><script src="sequence.js?v=slots-2"></script><script src="assessment.js?v=walk-3"></script></html>

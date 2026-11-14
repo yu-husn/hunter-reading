@@ -1,4 +1,5 @@
 const duration = 20 * 60;
+const passingScore = 60;
 const assessmentBar = document.querySelector('.assessment-bar');
 const clock = document.querySelector('#countdown');
 const clockProgress = document.querySelector('#countdown-progress');
@@ -6,6 +7,11 @@ const clockWarning = document.querySelector('#countdown-warning');
 const message = document.querySelector('#assessment-message');
 const startButton = document.querySelector('#start-assessment');
 const introStart = document.querySelector('#intro-start');
+const openingHunter = document.querySelector('.story-hunter');
+document.querySelector('#replay-walk').onclick = () => {
+  openingHunter.classList.remove('is-walking');
+  requestAnimationFrame(() => requestAnimationFrame(() => openingHunter.classList.add('is-walking')));
+};
 const roleForm = document.querySelector('#role-form');
 const roleOptions = roleForm.querySelector('fieldset');
 const currentRole = document.querySelector('#current-role');
@@ -25,11 +31,13 @@ const roles = {
 };
 let playerRole = null;
 const submitButton = document.querySelector('#submit-assessment');
+const passResult = document.querySelector('#pass-result');
 const restartButton = document.querySelector('#restart-assessment');
 const readingProgress = document.querySelector('#reading-progress');
 let state = 'ready';
 let deadline = 0;
 let timer;
+let confirmingSubmission = false;
 
 const stationLinks = [...document.querySelectorAll('.assessment-nav a')];
 const stations = stationLinks.map(link => document.querySelector(link.hash));
@@ -37,6 +45,16 @@ const previousStation = document.querySelector('#previous-station');
 const nextStation = document.querySelector('#next-station');
 const stationProgress = document.querySelector('#station-progress');
 let currentStation = 0;
+
+function updateSubmissionControls() {
+  const lastStation = currentStation === stations.length - 1;
+  const label = confirmingSubmission ? '確認交卷' : '交卷';
+  submitButton.textContent = label;
+  submitButton.disabled = state !== 'active';
+  nextStation.textContent = lastStation ? label : '下一站';
+  nextStation.hidden = lastStation && state === 'submitted';
+  nextStation.disabled = lastStation && state !== 'active';
+}
 
 function showStation(index, moveFocus = false) {
   currentStation = index;
@@ -46,7 +64,7 @@ function showStation(index, moveFocus = false) {
     else stationLinks[stationIndex].removeAttribute('aria-current');
   });
   previousStation.disabled = index === 0;
-  nextStation.disabled = index === stations.length - 1;
+  updateSubmissionControls();
   stationProgress.textContent = '第 ' + (index + 1) + ' 站／共 ' + stations.length + ' 站';
   if (moveFocus) {
     stations[index].scrollIntoView();
@@ -71,7 +89,10 @@ stationLinks.forEach((link, index) => link.addEventListener('click', event => {
   goToStation(index);
 }));
 previousStation.onclick = () => goToStation(currentStation - 1);
-nextStation.onclick = () => goToStation(currentStation + 1);
+nextStation.onclick = () => {
+  if (currentStation === stations.length - 1) requestSubmission();
+  else goToStation(currentStation + 1);
+};
 window.addEventListener('hashchange', showStationFromAddress);
 
 function assessmentIsActive() {
@@ -178,7 +199,7 @@ function showReadingGroup(index, focus = false) {
     button.setAttribute('aria-pressed', String(group === index));
   });
   document.querySelector('#previous-group').disabled = index === 0;
-  document.querySelector('#next-group').disabled = index === readingGroups.length - 1;
+  document.querySelector('#next-group').hidden = index === readingGroups.length - 1;
   if (focus) {
     groupTitle.closest('.reading-scene').scrollIntoView({ block: 'start' });
     groupTitle.focus({ preventScroll: true });
@@ -395,11 +416,12 @@ function startAssessment() {
   pairResults.hidden = true;
   document.querySelector('#reading-focus').hidden = true;
   document.querySelector('#total-score').textContent = '—／100';
+  passResult.hidden = true;
   readingProgress.textContent = '已作答 0／20 題';
   startButton.hidden = true;
   introStart.textContent = '返回闖關';
   restartButton.hidden = true;
-  submitButton.disabled = false;
+  confirmingSubmission = false;
   message.textContent = '作答中。未作答的項目以 0 分計。';
   timer = setInterval(updateTime, 250);
   updateTime();
@@ -421,9 +443,15 @@ function finishAssessment(expired) {
   renderPairs();
   const total = authorQuiz.grade() + sequenceScore + pairScore + readingQuiz.grade();
   document.querySelector('#total-score').textContent = total + '／100';
+  const passed = total >= passingScore;
+  passResult.textContent = passed ? '闖關通過' : '尚未通過';
+  passResult.dataset.passed = String(passed);
+  passResult.hidden = false;
   document.querySelector('#reading-focus').hidden = false;
-  message.textContent = (expired ? '時間到，已自動交卷。' : '已交卷。') + '各欄已顯示逐題分數與解析。';
-  submitButton.disabled = true;
+  message.textContent = (expired ? '時間到，已自動交卷。' : '已交卷。') +
+    (passed ? '已達 60 分，闖關通過。' : '尚未達到 60 分，可查看解析後重新作答。');
+  confirmingSubmission = false;
+  updateSubmissionControls();
   restartButton.hidden = false;
   introStart.textContent = '查看作答結果';
   document.querySelector('#total-score').focus();
@@ -444,7 +472,6 @@ function beginTimedAttempt() {
     roleOptions.disabled = true;
   }
   deadline = Date.now() + duration * 1000;
-  submitButton.textContent = '交卷';
   startAssessment();
 }
 
@@ -459,15 +486,17 @@ roleForm.onsubmit = event => {
     goToStation(currentStation);
   }
 };
-submitButton.onclick = () => {
+function requestSubmission() {
   if (!assessmentIsActive()) return;
-  if (submitButton.textContent === '確認交卷') {
+  if (confirmingSubmission) {
     finishAssessment(false);
   } else {
-    submitButton.textContent = '確認交卷';
+    confirmingSubmission = true;
+    updateSubmissionControls();
     message.textContent = '再按一次「確認交卷」即可查看成績。';
   }
-};
+}
+submitButton.onclick = requestSubmission;
 document.querySelector('#reading-questions').addEventListener('change', event => {
   if (!assessmentIsActive()) return;
   const answered = event.currentTarget.querySelectorAll('input:checked').length;
@@ -486,21 +515,38 @@ new ResizeObserver(([entry]) => {
 }).observe(assessmentBar);
 showStationFromAddress();
 
-const musicButton = document.querySelector('#music-toggle');
+const musicButtons = [...document.querySelectorAll('#music-toggle, #opening-music-toggle')];
 const music = new Audio('drums-of-the-deep.mp3');
 music.loop = true;
 music.preload = 'none';
 music.volume = 0.3;
-musicButton.onclick = async () => {
-  musicButton.disabled = true;
+let musicEnabled = true;
+
+async function playMusic() {
   try {
-    if (music.paused) await music.play();
-    else music.pause();
-  } catch {
-    message.textContent = '配樂暫時無法播放，可以繼續作答。';
-  } finally {
-    musicButton.setAttribute('aria-pressed', String(!music.paused));
-    musicButton.textContent = music.paused ? '開啟配樂' : '關閉配樂';
-    musicButton.disabled = false;
+    await music.play();
+  } catch (error) {
+    if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') {
+      musicEnabled = false;
+      updateMusicButtons();
+    }
   }
-};
+}
+
+function updateMusicButtons() {
+  musicButtons.forEach(button => {
+    button.textContent = musicEnabled ? '關閉配樂' : '開啟配樂';
+  });
+}
+
+musicButtons.forEach(button => button.addEventListener('click', () => {
+  musicEnabled = !musicEnabled;
+  updateMusicButtons();
+  if (musicEnabled) playMusic();
+  else music.pause();
+}));
+document.addEventListener('click', event => {
+  if (event.target.closest('#music-toggle, #opening-music-toggle')) return;
+  if (musicEnabled && music.paused) playMusic();
+});
+playMusic();

@@ -38,10 +38,41 @@
 .assessment-bar[data-urgent] .countdown-display { background: var(--rust); }
 .assessment-bar[data-urgent] #countdown-progress { accent-color: var(--rust); }
 .score-label { white-space: nowrap; }
+#pass-result {
+  display: inline-block;
+  margin-inline-start: .4rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--rust);
+  color: white;
+  font-weight: 700;
+}
+#pass-result[hidden] { display: none; }
+#pass-result[data-passed="true"] { background: #285541; }
 .section-score, .item-score { font-weight: 650; }
 #author, #sequence, #imagery, #quiz, #reading-focus, fieldset, .scene-card { scroll-margin-top: var(--assessment-offset, 170px); }
 #sequence .sequence-actions { position: static; }
 fieldset legend { font-weight: 700; padding: 0 6px; }
+#author-questions legend, #reading-questions legend {
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.5;
+}
+label.option {
+  min-height: 56px;
+  align-items: flex-start;
+  padding: 12px;
+  font-size: clamp(1.1rem, 2.3vw, 1.3rem);
+  font-weight: 650;
+  line-height: 1.5;
+}
+.option input[type="radio"], .role-option input[type="radio"] {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  margin: 2px 0 0;
+  cursor: inherit;
+}
 fieldset:disabled { opacity: 1; }
 button:disabled { cursor: default; opacity: .6; }
 #pair-results li + li { margin-top: .65rem; }
@@ -61,6 +92,7 @@ button:disabled { cursor: default; opacity: .6; }
 body { background: var(--paper); color: var(--ink); }
 header {
   position: relative;
+  container-type: inline-size;
   padding: 52px 0 32px;
   background: var(--ink);
   border: 0;
@@ -77,37 +109,80 @@ header::after { position: absolute; inset: auto 0 0; }
 header h1 { font-family: Georgia, "Noto Serif TC", "PMingLiU", serif; letter-spacing: .12em; }
 header p { color: #f0d6b3; }
 .story-opening {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(12px, 3vw, 28px);
-  border: 1px solid #d3ad80;
-  background: #171e19;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 390px);
+  align-items: end;
+  min-height: clamp(560px, 52vw, 780px);
+  width: 100cqw;
+  margin-inline: calc((100% - 100cqw) / 2);
+  padding: clamp(14px, 4vw, 56px);
+  background: #171e19 url('opening-forest.png') center / cover no-repeat;
 }
 .story-visual {
-  position: relative;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
+  container-type: size;
+}
+.story-landscape {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: max(100cqw, 150cqh);
   aspect-ratio: 3 / 2;
-  background: #203c32 url('opening-forest.png') center / cover;
+  transform: translateX(-50%);
+  background: #203c32 url('opening-forest.png') center / cover no-repeat;
 }
 .story-hunter {
   position: absolute;
-  left: 41%;
-  bottom: 9%;
-  width: 23%;
-  height: auto;
+  left: 46%;
+  bottom: 8%;
+  width: 12%;
+  aspect-ratio: 3 / 8;
   transform-origin: bottom center;
-  animation: hunter-enters 4s ease-out both;
+  transform: translate(80%, -48%) scale(.62);
+}
+.story-walk-frame {
+  width: 100%;
+  height: 100%;
+  background: url('opening-walk.png') 0 0 / 400% 100% no-repeat;
+}
+.story-hunter.is-walking {
+  animation: hunter-enters 4.2s linear both;
+}
+.is-walking .story-walk-frame {
+  animation: hunter-steps .84s steps(4, jump-none) 5;
 }
 @keyframes hunter-enters {
-  0% { transform: translate(-90%, 30%) scale(1.2); }
-  20% { transform: translate(-66%, 17%) rotate(-3deg) scale(1.12); }
-  40% { transform: translate(-46%, 12%) rotate(2deg) scale(1.05); }
-  60% { transform: translate(-24%, 0%) rotate(-2deg) scale(.98); }
-  80% { transform: translate(-8%, -5%) rotate(2deg) scale(.91); }
-  100% { transform: translate(8%, -14%) scale(.84); }
+  from { transform: translate(-10%, 4%) scale(1); }
+  to { transform: translate(80%, -48%) scale(.62); }
 }
-.story-copy { padding: clamp(12px, 3vw, 24px); }
+@keyframes hunter-steps {
+  from { background-position-x: 0; }
+  to { background-position-x: 100%; }
+}
+.story-controls {
+  position: relative;
+  align-self: start;
+  justify-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.story-controls button {
+  background: #171e19dc;
+  color: #fffaf0;
+  border: 1px solid #d3ad80;
+  font-size: .85rem;
+}
+.story-copy {
+  position: relative;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid #d3ad80;
+  border-radius: 8px;
+  background: #171e19ec;
+}
 .story-copy h2 { margin: 0; }
 .story-copy button { background: var(--gold); color: var(--ink); font-weight: 700; }
 .role-options { background: transparent; border: 0; padding: 0; margin: 12px 0; }
@@ -128,11 +203,17 @@ header p { color: #f0d6b3; }
 .role-options:disabled .role-option { cursor: default; }
 #current-role { font-size: .85rem; }
 #reading-role-cue { color: var(--rust); font-weight: 650; }
-@media (max-width: 700px) {
-  .story-opening { grid-template-columns: 1fr; gap: 0; }
+@media (max-width: 1180px) {
+  .story-opening {
+    --opening-scene-height: clamp(240px, 58vw, 430px);
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--opening-scene-height) auto;
+  }
+  .story-visual { bottom: auto; height: var(--opening-scene-height); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .story-hunter { animation: none; }
+  .story-hunter.is-walking, .is-walking .story-walk-frame { animation: none; }
+  .story-replay { display: none; }
 }
 .assessment-nav { margin: 22px 0 12px; gap: 8px; }
 .assessment-nav a {
