@@ -81,6 +81,16 @@
   background-size: 300% 200%;
 }
 .pair-placeholder { margin-top: 8px; color: #634c3c; }
+.pair-art-personification { background-image: url('imagery-personification.png'); }
+.pair-art-extra {
+  max-width: 108px;
+  aspect-ratio: 3 / 4;
+  background-image: url('imagery-rhetoric.png');
+  background-size: 400% 200%;
+}
+#phrases .sequence-title { font-size: clamp(.92rem, 1.8vw, 1.08rem); }
+#pair-results li { padding: .65rem .85rem; background: #f4eadb; border-radius: 6px; }
+#pair-results li p { margin: .35rem 0; }
 
 .sequence-tray {
   min-height: 90px;
@@ -100,7 +110,7 @@
 @media (max-width: 600px) {
   #sequence, #imagery { padding: 14px; }
   .sequence-slots, .sequence-cards { gap: 5px; }
-  .pair-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pair-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #phrases .sequence-tile { min-height: 126px; }
   .sequence-tile { padding: 4px; font-size: .78rem; }
 }

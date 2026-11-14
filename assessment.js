@@ -71,7 +71,7 @@ function incompleteActivities() {
   const activities = [
     ['作家介紹', authorQuestions.length, document.querySelectorAll('#author-questions input:checked').length, '題'],
     ['段落大意排序', scenes.length, placements.filter(index => index !== null).length, '格'],
-    ['譬喻連連看', pairs.length, assignments.size, '組'],
+    ['修辭', pairs.length, assignments.size, '題'],
     ['閱讀測驗', readingQuestions.length, document.querySelectorAll('#reading-questions input:checked').length, '題']
   ];
   return activities.filter(([, total, answered]) => answered < total)
@@ -192,7 +192,7 @@ function makeQuestions(containerId, questions, points, scoreId) {
   };
 }
 
-const authorQuiz = makeQuestions('author-questions', authorQuestions, 5, 'author-score');
+const authorQuiz = makeQuestions('author-questions', authorQuestions, 2.5, 'author-score');
 const readingGroups = [
   ['循著心願出發', [0, 1, 2, 18, 17], 0, '從「我」請人轉達心願的那一刻出發。讀讀他準備了什麼、想像怎樣歸來，再沿著這份期待讀到他遇見母豬和幼豬時的抉擇。'],
   ['走進林中找線索', [19, 6, 3, 15, 16], 3, '諾基斯讓「我」獨自進山。把溪邊的蹄印、林中似乎有人注視的感覺，以及回營後的對話放在一起，想想這些線索各能支持什麼推論。'],
@@ -201,7 +201,7 @@ const readingGroups = [
 ];
 const readingQuiz = makeQuestions('reading-questions',
   readingGroups.flatMap(([, indexes]) => indexes.map(index => readingQuestions[index])),
-  3, 'quiz-score');
+  2.5, 'quiz-score');
 const readingFields = [...document.querySelectorAll('#reading-questions fieldset')];
 const groupButtons = [...document.querySelectorAll('#reading-groups button')];
 const groupTitle = document.querySelector('#reading-group-title');
@@ -265,9 +265,15 @@ const pairFeedback = document.querySelector('#pairFeedback');
 const pairResults = document.querySelector('#pair-results');
 const pairReset = document.querySelector('#pairReset');
 const pairReturn = document.querySelector('#pair-return');
+const pairGroupButtons = [...document.querySelectorAll('#pair-groups button')];
+const pairGroups = [
+  { label: '轉化', order: [2, 4, 0, 3, 1] },
+  { label: '譬喻', order: [8, 5, 9, 6, 7] }
+];
 const assignments = new Map();
 let selectedImage = null;
 let draggedImage = null;
+let pairGroup = 0;
 
 function showPairSelection() {
   imagery.querySelectorAll('[data-image]').forEach(button => {
@@ -280,7 +286,7 @@ function selectPairImage(index) {
   selectedImage = selectedImage === index ? null : index;
   showPairSelection();
   pairFeedback.textContent = selectedImage === null ? '已取消選取。' :
-    '已選「' + pairs[index][1] + '」，請選上方的課文描寫。';
+    '已選「' + pairs[index][1] + '」，請選上方的課文句子。';
   if (selectedImage !== null) {
     const firstSlot = phrases.querySelector('button');
     firstSlot.focus({ preventScroll: true });
@@ -300,10 +306,10 @@ function movePairImage(index, destination) {
   if (destination !== null) assignments.set(destination, index);
   selectedImage = null;
   renderPairs();
-  pairFeedback.textContent = '已配對 ' + assignments.size + '／5 組。交卷前可修改。';
+  pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題。交卷前可修改。';
   const target = destination === null
     ? pictures.querySelector('[data-image="' + index + '"]')
-    : phrases.children[destination].querySelector('button');
+    : phrases.querySelector('[data-pair-slot="' + destination + '"] button');
   target.focus({ preventScroll: true });
 }
 
@@ -330,6 +336,8 @@ function makePairTile(imageIndex, destination = null) {
     const art = document.createElement('span');
     art.className = 'pair-art';
     art.style.backgroundPosition = pairs[imageIndex][3];
+    if (imageIndex < 5) art.classList.add('pair-art-personification');
+    if (imageIndex === 9) art.classList.add('pair-art-extra');
     art.setAttribute('aria-hidden', 'true');
     button.dataset.image = imageIndex;
     button.draggable = !button.disabled;
@@ -389,41 +397,61 @@ addPairDrop(pairTray, null);
 function renderPairs() {
   phrases.replaceChildren();
   pictures.replaceChildren();
-  pairs.forEach((_, index) => {
+  const group = pairGroups[pairGroup].order;
+  [...group].sort((a, b) => a - b).forEach(index => {
     const slot = document.createElement('li');
+    slot.dataset.pairSlot = index;
     slot.append(makePairTile(assignments.get(index), index));
     addPairDrop(slot, index);
     phrases.append(slot);
   });
   const used = [...assignments.values()];
-  [2, 4, 0, 3, 1].filter(index => !used.includes(index)).forEach(index => {
+  group.filter(index => !used.includes(index)).forEach(index => {
     const item = document.createElement('li');
     item.append(makePairTile(index));
     pictures.append(item);
   });
   pairReset.disabled = state !== 'active';
+  pairGroupButtons.forEach((button, index) => {
+    const { label, order } = pairGroups[index];
+    const filled = order.filter(slot => assignments.has(slot)).length;
+    button.textContent = label + ' ' + filled + '／' + order.length;
+    button.setAttribute('aria-pressed', String(index === pairGroup));
+  });
   showPairSelection();
 }
 
 pairReturn.onclick = () => movePairImage(selectedImage, null);
+pairGroupButtons.forEach((button, index) => button.onclick = () => {
+  pairGroup = index;
+  selectedImage = null;
+  draggedImage = null;
+  renderPairs();
+  pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題';
+});
 pairReset.onclick = () => {
   if (!assessmentIsActive()) return;
   assignments.clear();
   selectedImage = null;
   draggedImage = null;
   renderPairs();
-  pairFeedback.textContent = '已配對 0／5 組';
+  pairFeedback.textContent = '已配對 0／' + pairs.length + ' 題';
 };
 
 function gradePairs() {
   let score = 0;
-  pairs.forEach(([phrase, image, explanation], index) => {
-    const points = assignments.get(index) === index ? 2 : 0;
+  pairs.forEach(([sentence, effect, explanation], index) => {
+    const points = assignments.get(index) === index ? 2.5 : 0;
     score += points;
     const item = document.createElement('li');
     const choice = assignments.has(index) ? pairs[assignments.get(index)][1] : '未作答';
-    item.textContent = phrase + '｜' + points + '／2 分。你的配對：' + choice +
-      '。正確配對：' + image + '。' + explanation;
+    const heading = document.createElement('strong');
+    heading.textContent = (index < 5 ? '轉化' : '譬喻') + '｜' + sentence;
+    const result = document.createElement('p');
+    result.textContent = points + '／2.5 分。你的配對：' + choice + '。正確配對：' + effect + '。';
+    const analysis = document.createElement('p');
+    analysis.textContent = explanation;
+    item.append(heading, result, analysis);
     pairResults.append(item);
   });
   pairResults.hidden = false;
@@ -454,6 +482,7 @@ function startAssessment() {
   readingQuiz.reset(true);
   showReadingGroup(0);
   setSequenceState(state);
+  pairGroup = 0;
   pairReset.onclick();
   pairResults.replaceChildren();
   pairResults.hidden = true;
