@@ -36,12 +36,8 @@ async function playOpening() {
   if (playback !== openingPlayback) return;
 
   openingHunter.removeAttribute('data-waiting');
-  if (!reducedMotion.matches) {
-    openingHunter.classList.add('is-walking');
-    const [walk] = openingHunter.getAnimations();
-    if (walk) await walk.finished.catch(() => {});
-  }
-  if (playback === openingPlayback) openingCopy.inert = false;
+  openingHunter.classList.toggle('is-walking', !reducedMotion.matches);
+  openingCopy.inert = false;
 }
 
 replayWalk.onclick = playOpening;
