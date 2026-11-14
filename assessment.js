@@ -1,4 +1,4 @@
-const duration = 20 * 60;
+const duration = 25 * 60;
 const passingScore = 60;
 const assessmentBar = document.querySelector('.assessment-bar');
 const clock = document.querySelector('#countdown');
