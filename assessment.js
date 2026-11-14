@@ -18,15 +18,13 @@ const currentRole = document.querySelector('#current-role');
 const roles = {
   elder: { label: '雅隆．諾基斯', cues: [
     '想想你要怎麼引導這位想參加成年禮的年輕人。',
-    '回想你在何時放手讓他嘗試，何時又留意他的處境。',
-    '留意敘事者如何用譬喻寫出他初入山林的感受。',
-    '如果你要在火邊開導他，哪些經歷值得拿來談？'
+    '回想你在何時放手讓他嘗試，再看他如何寫出林中的挫折。',
+    '如果你要在火邊開導他，哪些經歷值得拿來談？他又會怎麼把這段故事傳下去？'
   ] },
   author: { label: '瓦歷斯．諾幹', cues: [
     '回想你為什麼想入山，以及你原本期待怎樣回家。',
-    '想想你在林中看到什麼、推想了什麼，又做了哪些決定。',
-    '想想你眼中和耳中的山林，怎麼隨心情而改變。',
-    '回想放過母豬的那一刻，看看諾基斯的話如何改變你對試煉的理解。'
+    '想想你怎麼從林中目光找線索，又怎麼用景物寫出失手後的心情。',
+    '回想放過母豬的那一刻。諾基斯的話，如何改變你對試煉和這片山林的理解？'
   ] }
 };
 let playerRole = null;
@@ -209,9 +207,8 @@ function makeQuestions(containerId, questions, points, scoreId) {
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 2.5, 'author-score');
 const readingGroups = [
   ['理解「我」的動機與選擇', [0, 1, 2, 3, 4], 0, '從第 3、4 段讀出「我」為何上山，再追蹤他獨自入山後的心情，以及兩次遇見山豬時的反應。'],
-  ['用課文證據推論人物', [5, 6], 3, '留意林中的目光和回營後的問話。把前後的細節接起來，推論老獵人怎麼帶領「我」。'],
-  ['寫作技巧與效果', [7, 8, 9, 10, 11], 2, '比較作者先寫了什麼、暫時省略了什麼，以及哪些細節到了後文才明白。也留意他怎麼借景物寫心情，並讓開頭和結尾互相呼應。'],
-  ['比較兩人對試煉的看法', [12, 13, 14], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
+  ['走進林中｜找線索，讀寫法', [5, 6, 7, 8, 9], 3, '把林中的目光和回營後的問話接起來，推論老獵人的帶領方式。再看看作者怎麼補述往事、留下空白，又如何用葉聲寫出失手後的心情。'],
+  ['回到火邊｜讀懂試煉的意義', [10, 11, 12, 13, 14], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再回看一路留下的伏筆和首尾的山林描寫，想想這場試煉留下了什麼。']
 ];
 const readingQuiz = makeQuestions('reading-questions',
   readingGroups.flatMap(([, indexes]) => indexes.map(index => readingQuestions[index])),
@@ -244,8 +241,8 @@ function showReadingGroup(index, focus = false) {
   readingSceneIntro.textContent = intro;
   readingRoleCue.hidden = playerRole === null;
   readingRoleCue.textContent = playerRole?.cues[index] ?? '';
-  evidenceChallenge.hidden = index !== 1;
   const visibleQuestions = readingGroups[index][1];
+  evidenceChallenge.hidden = !evidenceSteps.some(step => visibleQuestions.includes(step.index));
   readingFields.forEach((field, question) => {
     field.hidden = !visibleQuestions.includes(question);
   });
