@@ -8,10 +8,44 @@ const message = document.querySelector('#assessment-message');
 const startButton = document.querySelector('#start-assessment');
 const introStart = document.querySelector('#intro-start');
 const openingHunter = document.querySelector('.story-hunter');
-document.querySelector('#replay-walk').onclick = () => {
+const openingCopy = document.querySelector('.story-copy');
+const replayWalk = document.querySelector('#replay-walk');
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+function loadOpeningImage(path) {
+  const image = new Image();
+  image.src = path;
+  return image.decode().catch(() => {});
+}
+
+const openingBackgroundReady = loadOpeningImage('opening-forest.png');
+const openingSpriteReady = loadOpeningImage('opening-walk.png');
+let openingPlayback = 0;
+
+async function playOpening() {
+  const playback = ++openingPlayback;
+  openingCopy.inert = true;
+  openingHunter.toggleAttribute('data-waiting', true);
   openingHunter.classList.remove('is-walking');
-  requestAnimationFrame(() => requestAnimationFrame(() => openingHunter.classList.add('is-walking')));
-};
+
+  if (!reducedMotion.matches) {
+    await openingBackgroundReady;
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await openingSpriteReady;
+  }
+  if (playback !== openingPlayback) return;
+
+  openingHunter.removeAttribute('data-waiting');
+  if (!reducedMotion.matches) {
+    openingHunter.classList.add('is-walking');
+    const [walk] = openingHunter.getAnimations();
+    if (walk) await walk.finished.catch(() => {});
+  }
+  if (playback === openingPlayback) openingCopy.inert = false;
+}
+
+replayWalk.onclick = playOpening;
+playOpening();
 const roleForm = document.querySelector('#role-form');
 const roleOptions = roleForm.querySelector('fieldset');
 const currentRole = document.querySelector('#current-role');
@@ -50,6 +84,7 @@ let endingPlayback = 0;
 async function playHunterEnding() {
   const playback = ++endingPlayback;
   hunterEnding.classList.remove('ending-playing');
+  hunterEnding.querySelectorAll('img').forEach(frame => { frame.loading = 'eager'; });
   try {
     await Promise.all(endingFrames.map(frame => frame.decode()));
   } catch {
@@ -706,6 +741,7 @@ correctionsForm.onsubmit = event => {
 
 function startAssessment() {
   state = 'active';
+  endingFrames.forEach(frame => { frame.loading = 'eager'; });
   scoreLabels.forEach(([node, label]) => { node.textContent = label; });
   authorQuiz.reset(true);
   readingQuiz.reset(true);
