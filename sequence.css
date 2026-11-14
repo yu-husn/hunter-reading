@@ -83,6 +83,10 @@
 }
 .pair-placeholder { margin-top: 8px; color: #634c3c; }
 .pair-art-personification { background-image: url('imagery-personification.png'); }
+.pair-art-campfire {
+  background-image: url('trial-scenes-manga.png');
+  background-size: 400% auto;
+}
 .pair-art-extra {
   max-width: 108px;
   aspect-ratio: 3 / 4;

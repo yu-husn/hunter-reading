@@ -16,13 +16,13 @@ const roleForm = document.querySelector('#role-form');
 const roleOptions = roleForm.querySelector('fieldset');
 const currentRole = document.querySelector('#current-role');
 const roles = {
-  elder: { label: '老獵人諾基斯', cues: [
+  elder: { label: '雅隆．諾基斯', cues: [
     '想想你要怎麼引導這位想參加成年禮的年輕人。',
     '回想你在何時放手讓他嘗試，何時又留意他的處境。',
     '留意敘事者如何用譬喻寫出他初入山林的感受。',
     '如果你要在火邊開導他，哪些經歷值得拿來談？'
   ] },
-  author: { label: '作者「我」', cues: [
+  author: { label: '瓦歷斯．諾幹', cues: [
     '回想你為什麼想入山，以及你原本期待怎樣回家。',
     '想想你在林中看到什麼、推想了什麼，又做了哪些決定。',
     '想想你眼中和耳中的山林，怎麼隨心情而改變。',
@@ -194,10 +194,10 @@ function makeQuestions(containerId, questions, points, scoreId) {
 
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 2.5, 'author-score');
 const readingGroups = [
-  ['理解「我」的動機與選擇', [0, 1, 2, 18, 17], 0, '從「我」請人轉達心願的那一刻出發。讀讀他準備了什麼、想像怎樣歸來，再沿著這份期待讀到他遇見母豬和幼豬時的抉擇。'],
-  ['用課文證據推論人物', [19, 6, 3, 15, 16], 3, '諾基斯讓「我」獨自進山。把溪邊的蹄印、林中似乎有人注視的感覺，以及回營後的對話放在一起，想想這些線索各能支持什麼推論。'],
-  ['分析寫法與閱讀效果', [7, 8, 13, 14, 5], 2, '跟著「我」再走一遍山路。留意扁舟、樹葉和鳥鳴，想想作者怎麼用意象、聲音與留白寫出一路上的心情。'],
-  ['比較兩人對試煉的看法', [4, 9, 10, 11, 12], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
+  ['理解「我」的動機與選擇', [0, 1, 2, 3, 4], 0, '從第 3、4 段讀出「我」為何上山，再追蹤他獨自入山後的心情，以及兩次遇見山豬時的反應。'],
+  ['用課文證據推論人物', [5, 6, 7, 8, 9], 3, '留意篝火的暖意、林中的目光，以及回營後的問話。把前後的細節接起來，推論兩人的心情與行動。'],
+  ['寫作技巧與效果', [10, 11, 12, 13, 14], 2, '比較作者先寫了什麼、暫時省略了什麼，以及哪些細節到了後文才明白。也留意他怎麼借景物寫心情，並讓開頭和結尾互相呼應。'],
+  ['比較兩人對試煉的看法', [15, 16, 17, 18, 19], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
 ];
 const readingQuiz = makeQuestions('reading-questions',
   readingGroups.flatMap(([, indexes]) => indexes.map(index => readingQuestions[index])),
@@ -382,6 +382,7 @@ function makePairTile(imageIndex, destination = null) {
     art.className = 'pair-art';
     art.style.backgroundPosition = pairs[imageIndex][3];
     if (imageIndex < 5) art.classList.add('pair-art-personification');
+    if (imageIndex === 2) art.classList.add('pair-art-campfire');
     if (imageIndex === 9) art.classList.add('pair-art-extra');
     art.setAttribute('aria-hidden', 'true');
     button.dataset.image = imageIndex;
