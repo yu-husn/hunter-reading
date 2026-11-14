@@ -3,7 +3,7 @@
 #reading-focus details{border-top:1px solid #ddd9cb;padding:.65rem 0}
 #reading-focus summary{cursor:pointer;font-weight:650;color:#285541}
 #reading-focus details p{margin:.55rem 0 .25rem}
-</style><link rel="stylesheet" href="sequence.css?v=rhetoric-together"><link rel="stylesheet" href="assessment.css?v=finale-2"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+</style><link rel="stylesheet" href="sequence.css?v=rhetoric-toolbar"><link rel="stylesheet" href="assessment.css?v=finale-2"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
 .assessment-nav a{display:grid;gap:8px;padding:8px;text-align:center;align-content:start}
 .station-art{display:block;width:100%;aspect-ratio:3/2;background-image:url('trial-scenes-manga.png');background-size:400% auto;border-radius:3px}
 .station-art.departure{background-position:0 16.667%}
@@ -83,12 +83,16 @@
   <p>每組五題。先讀圖卡上的「轉化線索」或「相似點」，再把圖卡拖到對應的課文句子。也可以先點圖卡，再點句子。</p>
   <div class="sequence-actions">
     <p class="section-score" id="imagery-score">10 題，每題 2.5 分，共 25 分</p>
-    <button type="button" id="pairReset" class="secondary">清除配對</button>
+    <div class="pair-toolbar" role="group" aria-label="修辭題組與配對操作">
+      <button type="button" class="secondary pair-jump" data-pair-heading="personification-heading">轉化 <span class="pair-progress">0／5</span></button>
+      <button type="button" class="secondary pair-jump" data-pair-heading="metaphor-heading">譬喻 <span class="pair-progress">0／5</span></button>
+      <button type="button" id="pairReset" class="secondary">清除配對</button>
+    </div>
     <p id="pairFeedback" class="sequence-status" role="status">已配對 0／10 題</p>
   </div>
   <div id="pair-groups">
     <div class="pair-group" role="group" aria-labelledby="personification-heading">
-      <h3 id="personification-heading">轉化 <span class="pair-progress">0／5</span></h3>
+      <h3 id="personification-heading" tabindex="-1">轉化</h3>
       <ol class="sequence-slots pair-grid" aria-label="轉化配對格"></ol>
       <div class="sequence-tray">
         <button type="button" class="pair-return secondary" hidden>將選取圖卡放回下方</button>
@@ -96,7 +100,7 @@
       </div>
     </div>
     <div class="pair-group" role="group" aria-labelledby="metaphor-heading">
-      <h3 id="metaphor-heading">譬喻 <span class="pair-progress">0／5</span></h3>
+      <h3 id="metaphor-heading" tabindex="-1">譬喻</h3>
       <ol class="sequence-slots pair-grid" start="6" aria-label="譬喻配對格"></ol>
       <div class="sequence-tray">
         <button type="button" class="pair-return secondary" hidden>將選取圖卡放回下方</button>
@@ -170,4 +174,4 @@
 <p id="submission-hint" role="status" tabindex="-1" hidden></p>
 <div class="station-controls" role="group" aria-label="切換關卡"><button type="button" class="secondary" id="previous-station" disabled>上一站</button><span id="station-progress">第 1 站／共 4 站</span><button type="button" id="next-station">下一站</button></div>
 <footer><small>題目為自編練習，參考高雄市立中山國中公開段考題組的段落重組與訊息推論題型。</small><br><a href="https://www2.csjh.kh.edu.tw/teach/exam/106%E4%B8%8B%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83/%E5%9C%8B%E6%96%87/%E5%9C%8B%E6%96%873/%E4%B8%AD%E5%B1%B1%E5%9C%8B%E4%B8%AD106%E5%AD%B8%E5%B9%B4%E5%BA%A6%E7%AC%AC%E4%BA%8C%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83%E4%B8%89%E5%B9%B4%E7%B4%9A%E5%9C%8B%E6%96%87%E7%A7%91%E8%A9%A6%E9%A1%8C.pdf" target="_blank" rel="noopener">參考考題</a> · <a href="https://digitalmaster.knsh.com.tw/all/video/j/mandarin_page.html?l1=9%E4%B8%8A&amp;l2=L06%E3%80%80%E7%8D%B5%E4%BA%BA" target="_blank" rel="noopener">康軒課文影音</a><br><small>配樂 <a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900048">Ancient Rite</a> — Kevin MacLeod，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></small></footer></main>
-<script src="questions.js?v=lesson-review"></script><script src="sequence.js?v=rhetoric-1"></script><script src="assessment.js?v=rhetoric-together"></script></html>
+<script src="questions.js?v=lesson-review"></script><script src="sequence.js?v=rhetoric-1"></script><script src="assessment.js?v=rhetoric-toolbar"></script></html>

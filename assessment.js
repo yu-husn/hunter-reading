@@ -276,13 +276,21 @@ const imagery = document.querySelector('#imagery');
 const pairFeedback = document.querySelector('#pairFeedback');
 const pairResults = document.querySelector('#pair-results');
 const pairReset = document.querySelector('#pairReset');
+const pairJumpButtons = [...imagery.querySelectorAll('.pair-jump')];
+pairJumpButtons.forEach(button => {
+  const heading = document.getElementById(button.dataset.pairHeading);
+  button.onclick = () => {
+    heading.scrollIntoView({ block: 'start' });
+    heading.focus({ preventScroll: true });
+  };
+});
 const pairOrders = [[2, 4, 0, 3, 1], [8, 5, 9, 6, 7]];
 const pairGroups = [...imagery.querySelectorAll('.pair-group')].map((group, index) => ({
   order: pairOrders[index],
   slots: group.querySelector('.sequence-slots'),
   cards: group.querySelector('.sequence-cards'),
   tray: group.querySelector('.sequence-tray'),
-  progress: group.querySelector('.pair-progress'),
+  progress: pairJumpButtons[index].querySelector('.pair-progress'),
   returnButton: group.querySelector('.pair-return')
 }));
 const assignments = new Map();
