@@ -209,9 +209,9 @@ function makeQuestions(containerId, questions, points, scoreId) {
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 2.5, 'author-score');
 const readingGroups = [
   ['理解「我」的動機與選擇', [0, 1, 2, 3, 4], 0, '從第 3、4 段讀出「我」為何上山，再追蹤他獨自入山後的心情，以及兩次遇見山豬時的反應。'],
-  ['用課文證據推論人物', [5, 6, 7, 8, 9], 3, '留意篝火的暖意、林中的目光，以及回營後的問話。把前後的細節接起來，推論兩人的心情與行動。'],
-  ['寫作技巧與效果', [10, 11, 12, 13, 14], 2, '比較作者先寫了什麼、暫時省略了什麼，以及哪些細節到了後文才明白。也留意他怎麼借景物寫心情，並讓開頭和結尾互相呼應。'],
-  ['比較兩人對試煉的看法', [15, 16, 17, 18, 19], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
+  ['用課文證據推論人物', [5, 6], 3, '留意林中的目光和回營後的問話。把前後的細節接起來，推論老獵人怎麼帶領「我」。'],
+  ['寫作技巧與效果', [7, 8, 9, 10, 11], 2, '比較作者先寫了什麼、暫時省略了什麼，以及哪些細節到了後文才明白。也留意他怎麼借景物寫心情，並讓開頭和結尾互相呼應。'],
+  ['比較兩人對試煉的看法', [12, 13, 14], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
 ];
 const readingQuiz = makeQuestions('reading-questions',
   readingGroups.flatMap(([, indexes]) => indexes.map(index => readingQuestions[index])),
@@ -245,14 +245,15 @@ function showReadingGroup(index, focus = false) {
   readingRoleCue.hidden = playerRole === null;
   readingRoleCue.textContent = playerRole?.cues[index] ?? '';
   evidenceChallenge.hidden = index !== 1;
+  const visibleQuestions = readingGroups[index][1];
   readingFields.forEach((field, question) => {
-    field.hidden = Math.floor(question / 5) !== index;
+    field.hidden = !visibleQuestions.includes(question);
   });
   groupButtons.forEach((button, group) => {
-    const answered = readingFields.slice(group * 5, group * 5 + 5)
-      .filter(field => field.querySelector('input:checked')).length;
-    const first = group * 5 + 1;
-    button.textContent = '第 ' + first + '–' + (first + 4) + ' 題 · ' + answered + '／5';
+    const questions = readingGroups[group][1];
+    const answered = questions.filter(question => readingFields[question].querySelector('input:checked')).length;
+    button.textContent = '第 ' + (questions[0] + 1) + '–' + (questions.at(-1) + 1) +
+      ' 題 · ' + answered + '／' + questions.length;
     button.setAttribute('aria-pressed', String(group === index));
   });
   document.querySelector('#previous-group').disabled = index === 0;
@@ -284,7 +285,7 @@ pairJumpButtons.forEach(button => {
     heading.focus({ preventScroll: true });
   };
 });
-const pairOrders = [[2, 4, 0, 3, 1], [8, 5, 9, 6, 7]];
+const pairOrders = [[2, 4, 0, 3, 1], [8, 13, 5, 10, 7, 14, 6, 12, 9, 11]];
 const pairGroups = [...imagery.querySelectorAll('.pair-group')].map((group, index) => ({
   order: pairOrders[index],
   slots: group.querySelector('.sequence-slots'),
@@ -297,7 +298,34 @@ const assignments = new Map();
 let selectedImage = null;
 let draggedImage = null;
 
-const metaphorMotions = {
+const rhetoricMotions = {
+  0: { duration: 760, keyframes: [
+    { transform: 'translateY(8%) scale(.97)' },
+    { transform: 'translateY(-3%) scale(1.07)', offset: .7 },
+    { transform: 'none' }
+  ] },
+  1: { duration: 850, keyframes: [
+    { transform: 'scale(.94)', filter: 'brightness(1.05)' },
+    { transform: 'scale(1.12)', filter: 'brightness(.76)', offset: .75 },
+    { transform: 'none', filter: 'none' }
+  ] },
+  2: { duration: 920, keyframes: [
+    { filter: 'brightness(.8)' },
+    { filter: 'brightness(1.18)', offset: .38 },
+    { filter: 'brightness(.95)', offset: .65 },
+    { filter: 'none' }
+  ] },
+  3: { duration: 980, keyframes: [
+    { transform: 'translateY(12%)', filter: 'brightness(.75)' },
+    { transform: 'none', filter: 'none' }
+  ] },
+  4: { duration: 720, keyframes: [
+    { transform: 'none' },
+    { transform: 'rotate(-5deg) translateX(-3%)' },
+    { transform: 'rotate(5deg) translateX(3%)' },
+    { transform: 'rotate(-3deg)' },
+    { transform: 'none' }
+  ] },
   5: { duration: 660, keyframes: [
     { transform: 'translate(-12%, -20%) scale(.85)' },
     { transform: 'translate(4%, 9%) scale(1.1)', offset: .72 },
@@ -323,11 +351,35 @@ const metaphorMotions = {
     { transform: 'translateY(3%) rotate(-6deg)' },
     { transform: 'translateY(-3%) rotate(6deg)' },
     { transform: 'none' }
+  ] },
+  10: { duration: 860, keyframes: [
+    { opacity: .5, transform: 'scale(.92)' },
+    { opacity: 1, transform: 'none' }
+  ] },
+  11: { duration: 480, keyframes: [
+    { transform: 'translateX(-18%)' },
+    { transform: 'translateX(8%)', offset: .7 },
+    { transform: 'none' }
+  ] },
+  12: { duration: 720, keyframes: [
+    { transform: 'none' },
+    { transform: 'translate(15%, -4%) rotate(13deg)', offset: .65 },
+    { transform: 'none' }
+  ] },
+  13: { duration: 640, keyframes: [
+    { transform: 'none' },
+    { transform: 'scale(1.12)' },
+    { transform: 'none' }
+  ] },
+  14: { duration: 980, keyframes: [
+    { filter: 'brightness(.82)' },
+    { filter: 'brightness(1.15)' },
+    { filter: 'none' }
   ] }
 };
 
-function animateMetaphor(button, index) {
-  const motion = metaphorMotions[index];
+function animateRhetoricCard(button, index) {
+  const motion = rhetoricMotions[index];
   if (!motion || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const art = button.querySelector('.pair-art');
   art.getAnimations().forEach(animation => animation.cancel());
@@ -358,7 +410,7 @@ function selectPairImage(index, button) {
         firstSlot.scrollIntoView({ block: 'start' });
       }
     };
-    const animation = animateMetaphor(button, index);
+    const animation = animateRhetoricCard(button, index);
     if (animation) animation.onfinish = revealSlots;
     else revealSlots();
   }
@@ -381,7 +433,7 @@ function movePairImage(index, destination) {
     ? group.cards.querySelector('[data-image="' + index + '"]')
     : group.slots.querySelector('[data-pair-slot="' + destination + '"] button');
   target.focus({ preventScroll: true });
-  if (destination !== null) animateMetaphor(target, index);
+  if (destination !== null) animateRhetoricCard(target, index);
 }
 
 function makePairTile(imageIndex, destination = null) {
@@ -409,7 +461,8 @@ function makePairTile(imageIndex, destination = null) {
     art.style.backgroundPosition = pairs[imageIndex][3];
     if (imageIndex < 5) art.classList.add('pair-art-personification');
     if (imageIndex === 2) art.classList.add('pair-art-campfire');
-    if (imageIndex === 9) art.classList.add('pair-art-extra');
+    if (imageIndex >= 9 && imageIndex !== 12) art.classList.add('pair-art-extra');
+    if (imageIndex === 12) art.classList.add('pair-art-leaf');
     art.setAttribute('aria-hidden', 'true');
     button.dataset.image = imageIndex;
     button.draggable = !button.disabled;
@@ -563,7 +616,7 @@ function startAssessment() {
   passResult.hidden = true;
   hunterEnding.hidden = true;
   hunterEnding.classList.remove('ending-playing');
-  readingProgress.textContent = '已作答 0／20 題';
+  readingProgress.textContent = '已作答 0／' + readingQuestions.length + ' 題';
   startButton.hidden = true;
   introStart.textContent = '返回闖關';
   restartButton.hidden = true;
@@ -652,7 +705,7 @@ function requestSubmission() {
 document.querySelector('#reading-questions').addEventListener('change', event => {
   if (!assessmentIsActive()) return;
   const answered = event.currentTarget.querySelectorAll('input:checked').length;
-  readingProgress.textContent = '已作答 ' + answered + '／20 題';
+  readingProgress.textContent = '已作答 ' + answered + '／' + readingQuestions.length + ' 題';
   showReadingGroup(currentGroup);
 });
 document.querySelector('#total-score').tabIndex = -1;
