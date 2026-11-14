@@ -456,6 +456,9 @@ function makePairTile(imageIndex, destination = null) {
     placeholder.textContent = '空格';
     button.append(placeholder);
   } else {
+    const frame = document.createElement('span');
+    frame.className = 'pair-art-frame';
+    frame.setAttribute('aria-hidden', 'true');
     const art = document.createElement('span');
     art.className = 'pair-art';
     art.style.backgroundPosition = pairs[imageIndex][3];
@@ -463,7 +466,7 @@ function makePairTile(imageIndex, destination = null) {
     if (imageIndex === 2) art.classList.add('pair-art-campfire');
     if (imageIndex >= 9 && imageIndex !== 12) art.classList.add('pair-art-extra');
     if (imageIndex === 12) art.classList.add('pair-art-leaf');
-    art.setAttribute('aria-hidden', 'true');
+    frame.append(art);
     button.dataset.image = imageIndex;
     button.draggable = !button.disabled;
     const effect = document.createElement('span');
@@ -472,7 +475,7 @@ function makePairTile(imageIndex, destination = null) {
     const clue = document.createElement('span');
     clue.className = 'rhetoric-clue';
     clue.textContent = (imageIndex < 5 ? '轉化線索｜' : '相似點｜') + pairs[imageIndex][4];
-    button.append(art, effect, clue);
+    button.append(frame, effect, clue);
   }
   button.onclick = () => {
     if (!assessmentIsActive()) return;
