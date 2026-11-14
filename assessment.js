@@ -257,7 +257,7 @@ function makeQuestions(containerId, questions, points, scoreId) {
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 2.5, 'author-score');
 const readingGroups = [
   ['理解「我」的動機與選擇', [0, 1, 2, 3, 4], 0, '從第 3、4 段讀出「我」為何上山，再追蹤他獨自入山後的心情，以及兩次遇見山豬時的反應。'],
-  ['走進林中｜找線索，讀寫法', [5, 6, 7, 8, 9], 3, '把林中的目光和回營後的問話接起來，推論老獵人的帶領方式。再看看作者怎麼補述往事、留下空白，又如何用葉聲寫出失手後的心情。'],
+  ['走進林中｜找線索，讀寫法', [5, 6, 7, 8, 9], 3, '把林中的目光和回營後的問話接起來，推論老獵人的帶領方式。再看看作者怎麼補述往事、留下空白，運用技巧讓文章更優美。'],
   ['回到火邊｜讀懂試煉的意義', [10, 11, 12, 13, 14], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再回看一路留下的伏筆和首尾的山林描寫，想想這場試煉留下了什麼。']
 ];
 const readingQuiz = makeQuestions('reading-questions',
