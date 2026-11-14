@@ -194,10 +194,10 @@ function makeQuestions(containerId, questions, points, scoreId) {
 
 const authorQuiz = makeQuestions('author-questions', authorQuestions, 2.5, 'author-score');
 const readingGroups = [
-  ['循著心願出發', [0, 1, 2, 18, 17], 0, '從「我」請人轉達心願的那一刻出發。讀讀他準備了什麼、想像怎樣歸來，再沿著這份期待讀到他遇見母豬和幼豬時的抉擇。'],
-  ['走進林中找線索', [19, 6, 3, 15, 16], 3, '諾基斯讓「我」獨自進山。把溪邊的蹄印、林中似乎有人注視的感覺，以及回營後的對話放在一起，想想這些線索各能支持什麼推論。'],
-  ['讀懂山林的聲色', [7, 8, 13, 14, 5], 2, '跟著「我」再走一遍山路。留意扁舟、樹葉和鳥鳴，想想作者怎麼用意象、聲音與留白寫出一路上的心情。'],
-  ['回到火邊聽故事', [4, 9, 10, 11, 12], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
+  ['理解「我」的動機與選擇', [0, 1, 2, 18, 17], 0, '從「我」請人轉達心願的那一刻出發。讀讀他準備了什麼、想像怎樣歸來，再沿著這份期待讀到他遇見母豬和幼豬時的抉擇。'],
+  ['用課文證據推論人物', [19, 6, 3, 15, 16], 3, '諾基斯讓「我」獨自進山。把溪邊的蹄印、林中似乎有人注視的感覺，以及回營後的對話放在一起，想想這些線索各能支持什麼推論。'],
+  ['分析寫法與閱讀效果', [7, 8, 13, 14, 5], 2, '跟著「我」再走一遍山路。留意扁舟、樹葉和鳥鳴，想想作者怎麼用意象、聲音與留白寫出一路上的心情。'],
+  ['比較兩人對試煉的看法', [4, 9, 10, 11, 12], 7, '空手回營的「我」還在懊惱。聽完諾基斯的話，再想想兩人怎麼看待同一場試煉，以及老獵人想把什麼留給下一代。']
 ];
 const readingQuiz = makeQuestions('reading-questions',
   readingGroups.flatMap(([, indexes]) => indexes.map(index => readingQuestions[index])),
@@ -225,7 +225,7 @@ let currentGroup = 0;
 function showReadingGroup(index, focus = false) {
   currentGroup = index;
   const [title, , scene, intro] = readingGroups[index];
-  groupTitle.textContent = '第 ' + (index + 1) + ' 步／共 4 步｜' + title;
+  groupTitle.textContent = title;
   readingSceneArt.style.backgroundPosition = makeSceneArt(scene).style.backgroundPosition;
   readingSceneIntro.textContent = intro;
   readingRoleCue.hidden = playerRole === null;
@@ -237,7 +237,8 @@ function showReadingGroup(index, focus = false) {
   groupButtons.forEach((button, group) => {
     const answered = readingFields.slice(group * 5, group * 5 + 5)
       .filter(field => field.querySelector('input:checked')).length;
-    button.textContent = readingGroups[group][0] + ' ' + answered + '／5';
+    const first = group * 5 + 1;
+    button.textContent = '第 ' + first + '–' + (first + 4) + ' 題 · ' + answered + '／5';
     button.setAttribute('aria-pressed', String(group === index));
   });
   document.querySelector('#previous-group').disabled = index === 0;
