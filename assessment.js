@@ -30,7 +30,7 @@ const roles = {
   ] }
 };
 let playerRole = null;
-const submitButton = document.querySelector('#submit-assessment');
+const submissionHint = document.querySelector('#submission-hint');
 const passResult = document.querySelector('#pass-result');
 const restartButton = document.querySelector('#restart-assessment');
 const readingProgress = document.querySelector('#reading-progress');
@@ -46,14 +46,35 @@ const nextStation = document.querySelector('#next-station');
 const stationProgress = document.querySelector('#station-progress');
 let currentStation = 0;
 
+function incompleteActivities() {
+  const activities = [
+    ['作家介紹', authorQuestions.length, document.querySelectorAll('#author-questions input:checked').length, '題'],
+    ['段落大意排序', scenes.length, placements.filter(index => index !== null).length, '格'],
+    ['譬喻連連看', pairs.length, assignments.size, '組'],
+    ['閱讀測驗', readingQuestions.length, document.querySelectorAll('#reading-questions input:checked').length, '題']
+  ];
+  return activities.filter(([, total, answered]) => answered < total)
+    .map(([label, total, answered, unit]) => label + ' ' + (total - answered) + ' ' + unit);
+}
+
+function onFinalReadingPage() {
+  return currentStation === stations.length - 1 && currentGroup === readingGroups.length - 1;
+}
+
 function updateSubmissionControls() {
   const lastStation = currentStation === stations.length - 1;
-  const label = confirmingSubmission ? '確認交卷' : '交卷';
-  submitButton.textContent = label;
-  submitButton.disabled = state !== 'active';
-  nextStation.textContent = lastStation ? label : '下一站';
-  nextStation.hidden = lastStation && state === 'submitted';
-  nextStation.disabled = lastStation && state !== 'active';
+  const finalPage = state === 'active' && onFinalReadingPage();
+  const incomplete = finalPage ? incompleteActivities() : [];
+  const canSubmit = finalPage && incomplete.length === 0;
+  if (!canSubmit && confirmingSubmission) {
+    confirmingSubmission = false;
+    if (state === 'active') message.textContent = '作答中。';
+  }
+  nextStation.textContent = lastStation ? (confirmingSubmission ? '確認交卷' : '交卷') : '下一站';
+  nextStation.hidden = lastStation && !canSubmit;
+  submissionHint.hidden = !incomplete.length;
+  const hint = incomplete.length ? '請先完成 ' + incomplete.join('、') + '，即可交卷。' : '';
+  if (submissionHint.textContent !== hint) submissionHint.textContent = hint;
 }
 
 function showStation(index, moveFocus = false) {
@@ -200,6 +221,7 @@ function showReadingGroup(index, focus = false) {
   });
   document.querySelector('#previous-group').disabled = index === 0;
   document.querySelector('#next-group').hidden = index === readingGroups.length - 1;
+  updateSubmissionControls();
   if (focus) {
     groupTitle.closest('.reading-scene').scrollIntoView({ block: 'start' });
     groupTitle.focus({ preventScroll: true });
@@ -422,7 +444,7 @@ function startAssessment() {
   introStart.textContent = '返回闖關';
   restartButton.hidden = true;
   confirmingSubmission = false;
-  message.textContent = '作答中。未作答的項目以 0 分計。';
+  message.textContent = '作答中。完成四站後，在閱讀測驗最後一步交卷。';
   timer = setInterval(updateTime, 250);
   updateTime();
   goToStation(currentStation);
@@ -487,7 +509,7 @@ roleForm.onsubmit = event => {
   }
 };
 function requestSubmission() {
-  if (!assessmentIsActive()) return;
+  if (!assessmentIsActive() || !onFinalReadingPage() || incompleteActivities().length) return;
   if (confirmingSubmission) {
     finishAssessment(false);
   } else {
@@ -496,7 +518,6 @@ function requestSubmission() {
     message.textContent = '再按一次「確認交卷」即可查看成績。';
   }
 }
-submitButton.onclick = requestSubmission;
 document.querySelector('#reading-questions').addEventListener('change', event => {
   if (!assessmentIsActive()) return;
   const answered = event.currentTarget.querySelectorAll('input:checked').length;
