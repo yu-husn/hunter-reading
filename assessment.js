@@ -12,6 +12,49 @@ let state = 'ready';
 let deadline = 0;
 let timer;
 
+const stationLinks = [...document.querySelectorAll('.assessment-nav a')];
+const stations = stationLinks.map(link => document.querySelector(link.hash));
+const previousStation = document.querySelector('#previous-station');
+const nextStation = document.querySelector('#next-station');
+const stationProgress = document.querySelector('#station-progress');
+let currentStation = 0;
+
+function showStation(index, moveFocus = false) {
+  currentStation = index;
+  stations.forEach((station, stationIndex) => {
+    station.hidden = stationIndex !== index;
+    if (stationIndex === index) stationLinks[stationIndex].setAttribute('aria-current', 'step');
+    else stationLinks[stationIndex].removeAttribute('aria-current');
+  });
+  previousStation.disabled = index === 0;
+  nextStation.disabled = index === stations.length - 1;
+  stationProgress.textContent = '第 ' + (index + 1) + ' 站／共 ' + stations.length + ' 站';
+  if (moveFocus) {
+    stations[index].scrollIntoView();
+    stations[index].focus({ preventScroll: true });
+  }
+}
+
+function goToStation(index) {
+  const hash = stationLinks[index].hash;
+  if (location.hash !== hash) history.pushState(null, '', hash);
+  showStation(index, true);
+}
+
+function showStationFromAddress() {
+  const index = stationLinks.findIndex(link => link.hash === location.hash);
+  showStation(Math.max(0, index), index >= 0);
+}
+
+stationLinks.forEach((link, index) => link.addEventListener('click', event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  goToStation(index);
+}));
+previousStation.onclick = () => goToStation(currentStation - 1);
+nextStation.onclick = () => goToStation(currentStation + 1);
+window.addEventListener('hashchange', showStationFromAddress);
+
 function assessmentIsActive() {
   if (state === 'active' && Date.now() >= deadline) finishAssessment(true);
   return state === 'active';
@@ -237,8 +280,7 @@ function startAssessment() {
   message.textContent = '作答中。未作答的項目以 0 分計。';
   timer = setInterval(updateTime, 250);
   updateTime();
-  document.querySelector('#author').scrollIntoView();
-  document.querySelector('#author').focus({ preventScroll: true });
+  goToStation(currentStation);
 }
 
 function finishAssessment(expired) {
@@ -294,6 +336,7 @@ clockProgress.max = duration;
 new ResizeObserver(([entry]) => {
   entry.target.parentElement.style.setProperty('--assessment-offset', `${entry.target.offsetHeight + 12}px`);
 }).observe(assessmentBar);
+showStationFromAddress();
 
 const musicButton = document.querySelector('#music-toggle');
 const music = new Audio('drums-of-the-deep.mp3');

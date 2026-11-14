@@ -74,6 +74,16 @@ header p { color: #f0d6b3; }
   color: #fff7eb;
 }
 .assessment-nav a:hover { background: var(--rust); }
+.assessment-nav a[aria-current="step"] { background: var(--rust); border-color: var(--gold); }
+.assessment-nav small { display: block; color: #f0d6b3; }
+.station-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.station-controls span { font-size: .88rem; }
 .assessment-bar, section, fieldset { background: var(--surface); }
 .assessment-bar { border-bottom: 2px solid var(--rust); }
 main > section { border-top: 4px solid var(--rust); border-radius: 5px; }
