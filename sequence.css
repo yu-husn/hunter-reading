@@ -89,15 +89,20 @@
   background-image: url('imagery-rhetoric.png');
   background-size: 400% 200%;
 }
-#phrases .sequence-title { font-size: clamp(.92rem, 1.8vw, 1.08rem); }
+#phrases .sequence-title:not(.rhetoric-effect) { font-size: clamp(.92rem, 1.8vw, 1.08rem); }
+.pair-grid .sequence-tile .rhetoric-effect {
+  font-size: clamp(1.125rem, 2vw, 1.3rem);
+  line-height: 1.45;
+}
 .rhetoric-clue {
   width: 100%;
   padding: .4rem .5rem;
   border-radius: 4px;
   background: #fffaf0;
   color: #50382e;
-  font-size: .95rem;
-  line-height: 1.5;
+  font-size: clamp(1.0625rem, 1.8vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.6;
   text-align: start;
 }
 #pair-results li { padding: .65rem .85rem; background: #f4eadb; border-radius: 6px; }
