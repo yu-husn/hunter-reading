@@ -63,7 +63,7 @@
   width: 100%;
   aspect-ratio: 3 / 4;
   border-radius: 5px;
-  background: #e6e6da url('trial-scenes-manga.png') no-repeat;
+  background: #e6e6da url('trial-scenes-manga.webp') no-repeat;
   background-size: 400% 200%;
 }
 
@@ -87,22 +87,22 @@
   flex: none;
   width: 100%;
   aspect-ratio: 1;
-  background: #e6e6da url('imagery-manga.png') no-repeat;
+  background: #e6e6da url('imagery-manga.webp') no-repeat;
   background-size: 300% 200%;
 }
 .pair-placeholder { margin-top: 8px; color: #634c3c; }
-.pair-art-personification { background-image: url('imagery-personification.png'); }
+.pair-art-personification { background-image: url('imagery-personification.webp'); }
 .pair-art-leaf {
-  background-image: url('imagery-leaf.png');
+  background-image: url('imagery-leaf.webp');
   background-size: cover;
 }
 .pair-art-campfire {
-  background-image: url('trial-scenes-manga.png');
+  background-image: url('trial-scenes-manga.webp');
   background-size: 400% auto;
 }
 .pair-art-extra {
   aspect-ratio: 3 / 4;
-  background-image: url('imagery-rhetoric.png');
+  background-image: url('imagery-rhetoric.webp');
   background-size: 400% 200%;
 }
 .pair-group { margin-block-start: 1.5rem; padding-block-start: .75rem; border-top: 1px solid #c8ad8e; }

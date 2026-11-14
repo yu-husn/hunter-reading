@@ -56,6 +56,7 @@ let placements = Array(scenes.length).fill(null);
 let selectedScene = null;
 let draggingScene = null;
 let sequenceLocked = true;
+let sequenceSubmitted = false;
 
 function makeSceneArt(sceneIndex) {
   const art = document.createElement('span');
@@ -96,6 +97,7 @@ function moveScene(sceneIndex, destination) {
   }
   selectedScene = null;
   renderCards();
+  saveAttempt();
   const placed = placements.filter(index => index !== null).length;
   status.textContent = '「' + scenes[sceneIndex].title + '」已' +
     (destination === null ? '放回下方' : '放入第 ' + (destination + 1) + ' 格') +
@@ -189,7 +191,7 @@ function renderCards() {
     const slot = document.createElement('li');
     slot.append(makeTile(sceneIndex, position));
     addDrop(slot, position);
-    if (!solution.hidden) {
+    if (sequenceSubmitted) {
       const score = document.createElement('span');
       score.className = 'item-score';
       score.textContent = (sceneIndex === sequenceAnswerOrder[position] ? '2.5' : '0') + '／2.5 分';
@@ -219,12 +221,14 @@ shuffleButton.addEventListener('click', () => {
   selectedScene = null;
   renderCards();
   status.textContent = '圖卡已打亂。已放置 0／8 張。';
+  saveAttempt();
 });
 
 function setSequenceState(state) {
   sequenceLocked = state !== 'active';
+  sequenceSubmitted = state === 'submitted';
   shuffleButton.disabled = sequenceLocked;
-  solution.hidden = state !== 'submitted';
+  solution.hidden = true;
   solution.open = false;
   selectedScene = null;
   draggingScene = null;

@@ -18,8 +18,8 @@ function loadOpeningImage(path) {
   return image.decode().catch(() => {});
 }
 
-const openingBackgroundReady = loadOpeningImage('opening-forest.png');
-const openingSpriteReady = loadOpeningImage('opening-walk.png');
+const openingBackgroundReady = loadOpeningImage('opening-forest.webp');
+const openingSpriteReady = loadOpeningImage('opening-walk.webp');
 let openingPlayback = 0;
 
 async function playOpening() {
@@ -75,6 +75,10 @@ const assessmentResult = document.querySelector('#assessment-result');
 let originalScore = 0;
 let recoveredPoints = 0;
 let correctionItems = [];
+let correctionAttempts = {};
+let submittedAt = 0;
+let restoringAttempt = false;
+const attemptStorageKey = 'hunter-reading-attempt-v1';
 let endingPlayback = 0;
 
 async function playHunterEnding() {
@@ -106,17 +110,33 @@ const stations = stationLinks.map(link => document.querySelector(link.hash));
 const previousStation = document.querySelector('#previous-station');
 const nextStation = document.querySelector('#next-station');
 const stationProgress = document.querySelector('#station-progress');
+const unfinishedLinks = document.querySelector('#unfinished-links');
 let currentStation = 0;
 
 function incompleteActivities() {
   const activities = [
-    ['作家介紹', authorQuestions.length, document.querySelectorAll('#author-questions input:checked').length, '題'],
-    ['段落大意排序', scenes.length, placements.filter(index => index !== null).length, '格'],
-    ['修辭', pairs.length, assignments.size, '題'],
-    ['閱讀測驗', readingQuestions.length, document.querySelectorAll('#reading-questions input:checked').length, '題']
+    ['作家介紹', authorQuiz.choices(), '題'],
+    ['段落大意排序', placements, '格'],
+    ['修辭', pairs.map((_, index) => assignments.get(index) ?? null), '題'],
+    ['閱讀測驗', readingQuiz.choices(), '題']
   ];
-  return activities.filter(([, total, answered]) => answered < total)
-    .map(([label, total, answered, unit]) => label + ' ' + (total - answered) + ' ' + unit);
+  return activities.map(([label, answers, unit], station) => ({
+    label, station, unit, first: answers.indexOf(null), count: answers.filter(answer => answer === null).length
+  })).filter(activity => activity.count > 0);
+}
+
+function goToUnfinished({ station, first }) {
+  goToStation(station);
+  let target;
+  if (station === 0) target = document.querySelectorAll('#author-questions fieldset')[first];
+  if (station === 1) target = slots.children[first].querySelector('button');
+  if (station === 2) target = imagery.querySelector('[data-pair-slot="' + first + '"] button');
+  if (station === 3) {
+    showReadingGroup(readingGroups.findIndex(([, indexes]) => indexes.includes(first)));
+    target = readingFields[first];
+  }
+  target.scrollIntoView({ block: 'start' });
+  target.focus({ preventScroll: true });
 }
 
 function onFinalReadingPage() {
@@ -130,7 +150,8 @@ function rhetoricIncomplete() {
 function updateSubmissionControls() {
   const lastStation = currentStation === stations.length - 1;
   const finalPage = state === 'active' && onFinalReadingPage();
-  const incomplete = finalPage ? incompleteActivities() : [];
+  const blockedByPairs = rhetoricIncomplete();
+  const incomplete = finalPage || blockedByPairs ? incompleteActivities() : [];
   const canSubmit = finalPage && incomplete.length === 0;
   if (!canSubmit && confirmingSubmission) {
     confirmingSubmission = false;
@@ -138,15 +159,26 @@ function updateSubmissionControls() {
   }
   nextStation.textContent = lastStation ? (confirmingSubmission ? '確認交卷' : '交卷') : '下一站';
   nextStation.hidden = lastStation && !canSubmit;
-  nextStation.disabled = rhetoricIncomplete();
+  nextStation.disabled = blockedByPairs;
   let hint = '';
   if (nextStation.disabled) {
     hint = '第三關已配對 ' + assignments.size + '／' + pairs.length + ' 題。完成轉化與譬喻後即可前往下一站。';
   } else if (incomplete.length) {
-    hint = '請先完成 ' + incomplete.join('、') + '，即可交卷。';
+    hint = '完成下列題目後即可交卷。';
   }
   submissionHint.hidden = !hint;
   if (submissionHint.textContent !== hint) submissionHint.textContent = hint;
+  const links = blockedByPairs ? incomplete.filter(item => item.station === 2) : incomplete;
+  unfinishedLinks.hidden = links.length === 0;
+  const linkButtons = links.map(activity => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'secondary';
+    button.textContent = '前往' + activity.label + '（還差 ' + activity.count + ' ' + activity.unit + '）';
+    button.onclick = () => goToUnfinished(activity);
+    return button;
+  });
+  unfinishedLinks.replaceChildren(...linkButtons);
 }
 
 function showStation(index, moveFocus = false) {
@@ -163,6 +195,7 @@ function showStation(index, moveFocus = false) {
     stations[index].scrollIntoView();
     stations[index].focus({ preventScroll: true });
   }
+  saveAttempt();
 }
 
 function goToStation(index) {
@@ -201,6 +234,7 @@ function makeQuestions(containerId, questions, points, scoreId) {
   const container = document.querySelector('#' + containerId);
   const fields = questions.map(([skill, prompt, options, answer, explanation], index) => {
     const field = document.createElement('fieldset');
+    field.tabIndex = -1;
     const legend = document.createElement('legend');
     legend.textContent = (index + 1) + '．' + prompt;
     const caption = document.createElement('small');
@@ -224,11 +258,23 @@ function makeQuestions(containerId, questions, points, scoreId) {
     return { field, options, answer, explanation, feedback };
   });
   return {
+    choices() {
+      return fields.map(({ field }) => {
+        const choice = field.querySelector('input:checked');
+        return choice ? Number(choice.value) : null;
+      });
+    },
+    restore(choices) {
+      fields.forEach(({ field }, index) => {
+        const input = field.querySelectorAll('input')[choices[index]];
+        if (input) input.checked = true;
+      });
+    },
     mistakes() {
-      return fields.flatMap(({ field, options, answer }, index) => {
+      return fields.flatMap(({ field, options, answer, explanation }, index) => {
         const choice = field.querySelector('input:checked');
         const previous = choice ? Number(choice.value) : null;
-        return previous === answer ? [] : [{ prompt: questions[index][1], number: index + 1, options, answer, previous }];
+        return previous === answer ? [] : [{ prompt: questions[index][1], number: index + 1, options, answer, previous, explanation }];
       });
     },
     reset(active) {
@@ -245,11 +291,14 @@ function makeQuestions(containerId, questions, points, scoreId) {
         field.disabled = true;
         feedback.textContent = earned + '／' + points + ' 分' + (choice ? '。' : '（未作答）。') +
           '正確答案是「' + options[answer] + '」。' + explanation;
-        feedback.hidden = false;
+        feedback.hidden = earned === 0;
         return sum + earned;
       }, 0);
       document.querySelector('#' + scoreId).textContent += '｜得分 ' + score + ' 分';
       return score;
+    },
+    reveal(number) {
+      fields[number - 1].feedback.hidden = false;
     }
   };
 }
@@ -310,6 +359,7 @@ function showReadingGroup(index, focus = false) {
     groupTitle.closest('.reading-scene').scrollIntoView({ block: 'start' });
     groupTitle.focus({ preventScroll: true });
   }
+  saveAttempt();
 }
 
 groupButtons.forEach((button, index) => {
@@ -475,6 +525,7 @@ function movePairImage(index, destination) {
   if (destination !== null) assignments.set(destination, index);
   selectedImage = null;
   renderPairs();
+  saveAttempt();
   pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題。交卷前可修改。';
   const target = destination === null
     ? group.cards.querySelector('[data-image="' + index + '"]')
@@ -605,13 +656,18 @@ function renderPairs() {
   updateSubmissionControls();
 }
 
-pairReset.onclick = () => {
-  if (!assessmentIsActive()) return;
+function resetPairs() {
   assignments.clear();
   selectedImage = null;
   draggedImage = null;
   renderPairs();
   pairFeedback.textContent = '已配對 0／' + pairs.length + ' 題';
+}
+
+pairReset.onclick = () => {
+  if (!assessmentIsActive()) return;
+  resetPairs();
+  saveAttempt();
 };
 
 function gradePairs() {
@@ -620,6 +676,7 @@ function gradePairs() {
     const points = assignments.get(index) === index ? 2.5 : 0;
     score += points;
     const item = document.createElement('li');
+    item.hidden = points === 0;
     const choice = assignments.has(index) ? pairs[assignments.get(index)][1] : '未作答';
     const heading = document.createElement('strong');
     heading.textContent = (index < 5 ? '轉化' : '譬喻') + '｜' + sentence;
@@ -632,6 +689,61 @@ function gradePairs() {
   });
   pairResults.hidden = false;
   return score;
+}
+
+function saveAttempt() {
+  if (state === 'ready' || restoringAttempt) return;
+  try {
+    localStorage.setItem(attemptStorageKey, JSON.stringify({
+      role: Object.keys(roles).find(role => roles[role] === playerRole),
+      deadline, submittedAt, currentStation, currentGroup,
+      author: authorQuiz.choices(), reading: readingQuiz.choices(),
+      placements, trayOrder, assignments: [...assignments], correctionAttempts
+    }));
+  } catch {
+    // The game still works if browser storage is unavailable.
+  }
+}
+
+function restoreAttempt() {
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem(attemptStorageKey));
+  } catch {
+    return;
+  }
+  if (!saved || !Object.hasOwn(roles, saved.role) || !Number.isFinite(saved.deadline) ||
+      saved.author?.length !== authorQuestions.length || saved.reading?.length !== readingQuestions.length ||
+      saved.placements?.length !== scenes.length || saved.trayOrder?.length !== scenes.length ||
+      !Array.isArray(saved.assignments)) return;
+
+  restoringAttempt = true;
+  roleForm.elements['hunter-role'].value = saved.role;
+  selectRole(saved.role);
+  deadline = saved.deadline;
+  startAssessment(false);
+  authorQuiz.restore(saved.author);
+  readingQuiz.restore(saved.reading);
+  placements = saved.placements;
+  trayOrder = saved.trayOrder;
+  saved.assignments.forEach(([slot, image]) => assignments.set(slot, image));
+  correctionAttempts = saved.correctionAttempts ?? {};
+  renderCards();
+  status.textContent = '已放置 ' + placements.filter(card => card !== null).length + '／' + scenes.length + ' 張。';
+  renderPairs();
+  pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題。';
+  updateReadingProgress();
+  showReadingGroup(readingGroups[saved.currentGroup] ? saved.currentGroup : 0);
+  showStation(stations[saved.currentStation] ? saved.currentStation : 0, true);
+  if (saved.submittedAt) {
+    finishAssessment(saved.submittedAt >= deadline, saved.submittedAt);
+  } else {
+    message.textContent = '已恢復上次作答。倒數依原本截止時間繼續。';
+    timer = setInterval(updateTime, 250);
+    updateTime();
+  }
+  restoringAttempt = false;
+  saveAttempt();
 }
 
 function showTime(seconds) {
@@ -670,23 +782,67 @@ function updateResult(total) {
 function prepareCorrections() {
   const sceneOptions = scenes.map(scene => scene.title);
   const pairOptions = pairs.map(([, effect]) => effect);
+  const readingHints = [
+    '回讀第 4 段，留意「我」多年在外後仍惦記什麼。',
+    '比較兩次遇見山豬時，「我」各做了什麼。',
+    '把睡前對篝火的叮嚀，和「我」夜裡的感受一起讀。',
+    '想想家人迎接的畫面對「我」有什麼意義。',
+    '連著讀第 3、4 段，看看老獵人的話回應了「我」哪個心願。',
+    '比較老獵人出發前做的安排，和回營後說的話。',
+    '找一組能把林中的情況和回營後的對話連起來的細節。',
+    '分辨事件真正發生的時間，以及作者安排它出現的位置。',
+    '想想讀者看到刪節號時，還有哪些事需要從後文推知。',
+    '把「訕笑」放回失手的情境，想想作者當時的感受。',
+    '比較保留和刪去林中目光時，讀者怎麼理解回營後的談話。',
+    '對照首尾兩次寫山脈時，敘事者的處境和感受。',
+    '注意「我」看見幼豬前後，對眼前生命的態度有何變化。',
+    '分別找出「我」和諾基斯用什麼標準看待這場試煉。',
+    '留意結尾如何從一個人的試煉，寫到後來的年輕人。'
+  ];
+  const sequenceHints = [
+    '想想這趟試煉的起因。', '找出出發之後、獨自入林之前發生的事。',
+    '留意諾基斯何時讓「我」自己行動。', '找出第一次交鋒前，溪邊提供了什麼線索。',
+    '回到第 9 段，看看發現蹤跡之後發生了什麼。', '留意第 10 段的「重新回到」，想想它接在哪個事件後。',
+    '比較山豬兩次出現時，牠身邊有什麼不同。', '找出回營後，誰幫「我」重新理解這場試煉。'
+  ];
   const sortingMistakes = sequenceAnswerOrder.flatMap((answer, index) => {
     const previous = placements[index];
     return previous === answer ? [] : [{
       number: index + 1, prompt: '哪個情節應放在這一格？', options: sceneOptions, answer, previous,
-      optionOrder: initialOrder
+      optionOrder: initialOrder, hint: sequenceHints[index], explanation: scenes[answer].clue
     }];
   });
-  const pairingMistakes = pairs.flatMap(([prompt], index) => assignments.get(index) === index ? [] : [{
+  const pairingMistakes = pairs.flatMap(([prompt, , explanation], index) => assignments.get(index) === index ? [] : [{
     number: index + 1, prompt, options: pairOptions, answer: index, previous: assignments.get(index) ?? null,
-    optionOrder: pairOrders[index < 5 ? 0 : 1]
+    optionOrder: pairOrders[index < 5 ? 0 : 1], explanation,
+    hint: index < 5 ? '找出句子中像人一樣的動作或特徵，再想它在描寫什麼。' : '先辨認句中哪兩樣事物被放在一起，再比較它們的共同點。'
   }]);
   correctionItems = [
     ['作家介紹', authorQuiz.mistakes()],
     ['段落大意排序', sortingMistakes],
     ['轉化與譬喻', pairingMistakes],
-    ['閱讀測驗', readingQuiz.mistakes()]
-  ].flatMap(([station, items]) => items.map(item => ({ ...item, station })));
+    ['閱讀測驗', readingQuiz.mistakes().map(item => ({ ...item, hint: readingHints[item.number - 1] }))]
+  ].flatMap(([station, items], stationIndex) => items.map(item => ({
+    ...item, station, stationIndex, key: stationIndex + '-' + item.number
+  })));
+  for (const item of correctionItems) {
+    if (Object.hasOwn(correctionAttempts, item.key)) showCorrectionResult(item, correctionAttempts[item.key]);
+  }
+  correctionItems = correctionItems.filter(item => !Object.hasOwn(correctionAttempts, item.key));
+  solution.hidden = correctionItems.some(item => item.stationIndex === 1);
+}
+
+function showCorrectionResult(item, choice) {
+  const correct = choice === item.answer;
+  if (correct) recoveredPoints += 2.5;
+  const result = document.createElement('li');
+  result.textContent = item.station + '第 ' + item.number + ' 題。' +
+    (correct ? '訂正答對，加 2.5 分。' : '訂正未答對。') +
+    '正確答案是「' + item.options[item.answer] + '」。' + item.explanation;
+  correctionsResults.append(result);
+  if (item.stationIndex === 0) authorQuiz.reveal(item.number);
+  if (item.stationIndex === 2) pairResults.children[item.number - 1].hidden = false;
+  if (item.stationIndex === 3) readingQuiz.reveal(item.number);
 }
 
 function renderCorrections(lastResult = '') {
@@ -695,20 +851,22 @@ function renderCorrections(lastResult = '') {
   correctionsSummary.textContent = '原始分數 ' + originalScore + '／100。訂正後分數 ' +
     (originalScore + recoveredPoints) + '／100。' + lastResult +
     (correctionItems.length ? '還有 ' + correctionItems.length + ' 題可訂正。' : '已無待訂正題目。');
-  correctionItems.forEach(({ station, number, prompt, options, previous, optionOrder = options.map((_, index) => index) }, index) => {
+  correctionItems.forEach(({ key, station, number, prompt, options, previous, hint, optionOrder = options.map((_, index) => index) }) => {
     const field = document.createElement('fieldset');
     const legend = document.createElement('legend');
     legend.textContent = station + '｜第 ' + number + ' 題　' + prompt;
     const response = document.createElement('p');
     response.textContent = previous === null ? '原先未作答' : '原先選擇：' + options[previous];
     const select = document.createElement('select');
-    select.name = 'correction-' + index;
+    select.name = key;
     select.setAttribute('aria-label', station + '第 ' + number + ' 題的訂正答案');
     select.add(new Option('請重新選擇答案', ''));
     for (const option of optionOrder) {
       select.add(new Option(options[option], option));
     }
-    field.append(legend, response, select);
+    const help = document.createElement('p');
+    help.textContent = '提示｜' + (hint ?? '回到作家介紹，找出和題意最直接相關的一句。');
+    field.append(legend, response, help, select);
     correctionsItems.append(field);
   });
 }
@@ -719,26 +877,25 @@ correctionsForm.onsubmit = event => {
   const answers = new FormData(correctionsForm);
   let attempted = 0;
   let corrected = 0;
-  correctionItems = correctionItems.filter((item, index) => {
-    const choice = answers.get('correction-' + index);
+  correctionItems = correctionItems.filter(item => {
+    const choice = answers.get(item.key);
     if (!choice) return true;
     attempted++;
-    const correct = Number(choice) === item.answer;
-    if (correct) corrected++;
-    const result = document.createElement('li');
-    result.textContent = item.station + '第 ' + item.number + ' 題：' +
-      (correct ? '訂正答對，加 2.5 分。' : '訂正未答對。正確答案：' + item.options[item.answer] + '。');
-    correctionsResults.append(result);
+    correctionAttempts[item.key] = Number(choice);
+    if (Number(choice) === item.answer) corrected++;
+    showCorrectionResult(item, Number(choice));
     return false;
   });
-  recoveredPoints += corrected * 2.5;
+  solution.hidden = correctionItems.some(item => item.stationIndex === 1);
   renderCorrections(attempted ? '本次訂正答對 ' + corrected + ' 題。' : '請先選擇要訂正的答案。');
   const passedNow = updateResult(originalScore + recoveredPoints);
   if (passedNow) message.textContent = '訂正後已達 60 分，闖關通過。';
   else correctionsSummary.focus();
+  saveAttempt();
 };
 
-function startAssessment() {
+function startAssessment(startTimer = true) {
+  restoringAttempt = true;
   state = 'active';
   endingFrames.forEach(frame => { frame.loading = 'eager'; });
   scoreLabels.forEach(([node, label]) => { node.textContent = label; });
@@ -746,7 +903,7 @@ function startAssessment() {
   readingQuiz.reset(true);
   showReadingGroup(0);
   setSequenceState(state);
-  pairReset.onclick();
+  resetPairs();
   pairResults.replaceChildren();
   pairResults.hidden = true;
   totalScore.textContent = '—／100';
@@ -755,6 +912,8 @@ function startAssessment() {
   passResult.hidden = true;
   corrections.hidden = true;
   correctionItems = [];
+  correctionAttempts = {};
+  submittedAt = 0;
   recoveredPoints = 0;
   correctionsItems.replaceChildren();
   correctionsResults.replaceChildren();
@@ -766,16 +925,20 @@ function startAssessment() {
   restartButton.hidden = true;
   confirmingSubmission = false;
   message.textContent = '作答中。完成四站後，在閱讀測驗最後一步交卷。';
-  timer = setInterval(updateTime, 250);
-  updateTime();
-  goToStation(currentStation);
+  if (startTimer) {
+    restoringAttempt = false;
+    timer = setInterval(updateTime, 250);
+    updateTime();
+    goToStation(currentStation);
+  }
 }
 
-function finishAssessment(expired) {
+function finishAssessment(expired, finishedAt = expired ? deadline : Date.now()) {
   if (state !== 'active') return;
   state = 'submitted';
+  submittedAt = finishedAt;
   clearInterval(timer);
-  showTime(expired ? 0 : Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+  showTime(expired ? 0 : Math.max(0, Math.ceil((deadline - submittedAt) / 1000)));
   const sequenceScore = gradeSequence();
   document.querySelector('#sequence-score').textContent += '｜得分 ' + sequenceScore + ' 分';
   setSequenceState(state);
@@ -796,10 +959,18 @@ function finishAssessment(expired) {
   updateSubmissionControls();
   restartButton.hidden = false;
   introStart.textContent = '查看作答結果';
-  if (!updateResult(originalScore)) {
+  if (!updateResult(originalScore + recoveredPoints)) {
     assessmentResult.scrollIntoView({ block: 'start', behavior: 'instant' });
     totalScore.focus({ preventScroll: true });
   }
+  saveAttempt();
+}
+
+function selectRole(role) {
+  playerRole = roles[role];
+  currentRole.textContent = '角色｜' + playerRole.label;
+  currentRole.hidden = false;
+  roleOptions.disabled = true;
 }
 
 function beginTimedAttempt() {
@@ -810,12 +981,7 @@ function beginTimedAttempt() {
     roleForm.reportValidity();
     return;
   }
-  if (state === 'ready') {
-    playerRole = roles[role];
-    currentRole.textContent = '角色｜' + playerRole.label;
-    currentRole.hidden = false;
-    roleOptions.disabled = true;
-  }
+  if (state === 'ready') selectRole(role);
   deadline = Date.now() + duration * 1000;
   startAssessment();
 }
@@ -841,12 +1007,16 @@ function requestSubmission() {
     message.textContent = '再按一次「確認交卷」即可查看成績。';
   }
 }
-document.querySelector('#reading-questions').addEventListener('change', event => {
-  if (!assessmentIsActive()) return;
-  const answered = event.currentTarget.querySelectorAll('input:checked').length;
+function updateReadingProgress() {
+  const answered = readingQuiz.choices().filter(choice => choice !== null).length;
   readingProgress.textContent = '已作答 ' + answered + '／' + readingQuestions.length + ' 題';
+}
+document.querySelector('#reading-questions').addEventListener('change', () => {
+  if (!assessmentIsActive()) return;
+  updateReadingProgress();
   showReadingGroup(currentGroup);
 });
+document.querySelector('#author-questions').addEventListener('change', saveAttempt);
 document.querySelector('#total-score').tabIndex = -1;
 document.querySelector('#author').tabIndex = -1;
 authorQuiz.reset(false);
@@ -858,6 +1028,7 @@ new ResizeObserver(([entry]) => {
   entry.target.parentElement.style.setProperty('--assessment-offset', `${entry.target.offsetHeight + 12}px`);
 }).observe(assessmentBar);
 showStationFromAddress();
+restoreAttempt();
 
 const musicButtons = [...document.querySelectorAll('#music-toggle, #opening-music-toggle')];
 // The MP3 is attenuated so the same mix also works on devices that use system volume.

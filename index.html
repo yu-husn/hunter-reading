@@ -1,11 +1,11 @@
 <!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>獵人｜閱讀理解</title><style>
 *{box-sizing:border-box}body{margin:0;background:#f4f1e8;color:#23382d;font:17px/1.7 system-ui,sans-serif}main,nav{max-width:1200px;margin:auto;padding:0 clamp(14px,3vw,32px)}header{background:#203c32;color:#fff;padding:42px 0 55px;border-bottom:6px solid #cfaa65}header p{color:#e9d8b7}h1{font:700 clamp(3rem,10vw,5rem)/1.1 Georgia,serif;margin:.25em 0}h2{line-height:1.4}section,fieldset{background:#fffdf7;border:1px solid #ddd9cb;border-radius:14px;margin:22px 0;padding:22px;min-width:0}fieldset h3{margin:0 0 12px}label.option{display:flex;gap:12px;border:1px solid #deded1;border-radius:9px;padding:10px 13px;margin:8px 0;cursor:pointer}label:has(input:checked){background:#e5efe6;border-color:#557962}input{accent-color:#2b5945}button{background:#285541;color:white;border:0;border-radius:8px;padding:10px 16px;font:inherit;cursor:pointer}button.secondary{background:#e6e6da;color:#23382d}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #b97318;outline-offset:3px}textarea{display:block;width:100%;min-height:100px;font:inherit;padding:10px;margin:10px 0}a{color:#285541}header a{color:#fff}small{color:#55675c}.feedback{background:#eaf0e4;padding:12px;border-radius:8px}progress{width:100%;accent-color:#285541}footer{padding:12px 0 36px}
-</style><link rel="stylesheet" href="sequence.css?v=rhetoric-equal-text"><link rel="stylesheet" href="assessment.css?v=opening-sequence"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+</style><link rel="stylesheet" href="sequence.css?v=classroom-update"><link rel="stylesheet" href="assessment.css?v=classroom-update"><style>.assessment-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
 .assessment-nav a{display:grid;gap:8px;padding:8px;text-align:center;align-content:start}
-.station-art{display:block;width:100%;aspect-ratio:3/2;background-image:url('trial-scenes-manga.png');background-size:400% auto;border-radius:3px}
+.station-art{display:block;width:100%;aspect-ratio:3/2;background-image:url('trial-scenes-manga.webp');background-size:400% auto;border-radius:3px}
 .station-art.departure{background-position:0 16.667%}
 .station-art.tracks{background-position:100% 16.667%}
-.station-art.hawk{background-image:url('imagery-manga.png');background-size:300% auto;background-position:50% 12.5%}
+.station-art.hawk{background-image:url('imagery-manga.webp');background-size:300% auto;background-position:50% 12.5%}
 .station-art.campfire{background-position:100% 83.333%}
 @media(max-width:620px){.assessment-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}</style><header><nav><p>康軒國文・九年級上冊・第六課</p><h1>獵人</h1><p>瓦歷斯．諾幹｜山林試煉</p><div class="story-opening">
   <div class="story-visual" role="img" aria-label="作者沿著晨光中的山徑往森林深處走">
@@ -74,7 +74,7 @@
   <h2 id="corrections-title" tabindex="-1">你還有機會成為最厲害的獵人，錯題再給你一次選擇的機會！</h2>
   <p id="corrections-summary" role="status" tabindex="-1"></p>
   <form id="corrections-form">
-    <p>每題可再選一次，答對加 2.5 分。你可以分批送出，未選的題目可稍後再答。</p>
+    <p>先讀提示再訂正。每題可再選一次，答對加 2.5 分。可以分批送出，送出後就能看該題解析。</p>
     <div id="corrections-items"></div>
     <button type="submit">確認訂正</button>
   </form>
@@ -151,6 +151,7 @@
   <button type="button" id="next-group">下一步</button>
 </div></section>
 <p id="submission-hint" role="status" tabindex="-1" hidden></p>
+<div id="unfinished-links" class="reading-groups" hidden aria-label="跳到未完成的題目"></div>
 <div class="station-controls" role="group" aria-label="切換關卡"><button type="button" class="secondary" id="previous-station" disabled>上一站</button><span id="station-progress">第 1 站／共 4 站</span><button type="button" id="next-station">下一站</button></div>
 <footer><p><small>本關題目依康軒 115 學年度九年級上冊第六課備課資料改編，參考第 74–79 頁課文、第 80 頁鑑賞分析及第 81–82 頁問題思考與文意理解。</small> <a href="https://wayground.com/admin/quiz/68a3df6edb2d1211cfe84859/l06" target="_blank" rel="noopener">查看康軒線上測驗</a></p><small>題目為自編練習，參考高雄市立中山國中公開段考題組的段落重組與訊息推論題型。</small><br><a href="https://www2.csjh.kh.edu.tw/teach/exam/106%E4%B8%8B%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83/%E5%9C%8B%E6%96%87/%E5%9C%8B%E6%96%873/%E4%B8%AD%E5%B1%B1%E5%9C%8B%E4%B8%AD106%E5%AD%B8%E5%B9%B4%E5%BA%A6%E7%AC%AC%E4%BA%8C%E5%AD%B8%E6%9C%9F%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%AE%B5%E8%80%83%E4%B8%89%E5%B9%B4%E7%B4%9A%E5%9C%8B%E6%96%87%E7%A7%91%E8%A9%A6%E9%A1%8C.pdf" target="_blank" rel="noopener">參考考題</a> · <a href="https://digitalmaster.knsh.com.tw/all/video/j/mandarin_page.html?l1=9%E4%B8%8A&amp;l2=L06%E3%80%80%E7%8D%B5%E4%BA%BA" target="_blank" rel="noopener">康軒課文影音</a><br><small>配樂 <a href="https://incompetech.com/music/royalty-free/index.html?Search=Search&amp;isrc=USUAN1100739">Tafi Maradi</a> — Kevin MacLeod，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>（已調低音量）</small></footer></main>
-<script src="questions.js?v=q11-wording"></script><script src="sequence.js?v=event-order-corrected"></script><script src="assessment.js?v=event-order-corrected"></script></html>
+<script src="questions.js?v=q11-wording"></script><script src="sequence.js?v=classroom-update"></script><script src="assessment.js?v=classroom-update"></script></html>

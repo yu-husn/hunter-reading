@@ -116,7 +116,7 @@ header p { color: #f0d6b3; }
   width: 100cqw;
   margin-inline: calc((100% - 100cqw) / 2);
   padding: clamp(14px, 4vw, 56px);
-  background: #171e19 url('opening-forest.png') center / cover no-repeat;
+  background: #171e19 url('opening-forest.webp') center / cover no-repeat;
 }
 .story-visual {
   position: absolute;
@@ -131,7 +131,7 @@ header p { color: #f0d6b3; }
   width: max(100cqw, 150cqh);
   aspect-ratio: 3 / 2;
   transform: translateX(-50%);
-  background: #203c32 url('opening-forest.png') center / cover no-repeat;
+  background: #203c32 url('opening-forest.webp') center / cover no-repeat;
 }
 .story-hunter {
   position: absolute;
@@ -146,7 +146,7 @@ header p { color: #f0d6b3; }
 .story-walk-frame {
   width: 100%;
   height: 100%;
-  background: url('opening-walk.png') 0 0 / 400% 100% no-repeat;
+  background: url('opening-walk.webp') 0 0 / 400% 100% no-repeat;
 }
 .story-hunter.is-walking {
   --walk-duration: 10s;
@@ -307,6 +307,8 @@ label:has(input:checked) {
 .scene-card, .feedback { background: #f4eadb; color: var(--ink); }
 
 .reading-groups { display: flex; flex-wrap: wrap; gap: .5rem; }
+#unfinished-links[hidden] { display: none; }
+#unfinished-links { margin-block: .6rem; }
 .reading-groups button[aria-pressed="true"] { background: var(--rust); color: white; }
 #reading-group-title { scroll-margin-top: var(--assessment-offset, 170px); }
 .reading-scene {
