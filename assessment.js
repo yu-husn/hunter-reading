@@ -82,6 +82,10 @@ function onFinalReadingPage() {
   return currentStation === stations.length - 1 && currentGroup === readingGroups.length - 1;
 }
 
+function rhetoricIncomplete() {
+  return state === 'active' && stations[currentStation].id === 'imagery' && assignments.size < pairs.length;
+}
+
 function updateSubmissionControls() {
   const lastStation = currentStation === stations.length - 1;
   const finalPage = state === 'active' && onFinalReadingPage();
@@ -93,8 +97,14 @@ function updateSubmissionControls() {
   }
   nextStation.textContent = lastStation ? (confirmingSubmission ? '確認交卷' : '交卷') : '下一站';
   nextStation.hidden = lastStation && !canSubmit;
-  submissionHint.hidden = !incomplete.length;
-  const hint = incomplete.length ? '請先完成 ' + incomplete.join('、') + '，即可交卷。' : '';
+  nextStation.disabled = rhetoricIncomplete();
+  let hint = '';
+  if (nextStation.disabled) {
+    hint = '第三關已配對 ' + assignments.size + '／' + pairs.length + ' 題。完成轉化與譬喻後即可前往下一站。';
+  } else if (incomplete.length) {
+    hint = '請先完成 ' + incomplete.join('、') + '，即可交卷。';
+  }
+  submissionHint.hidden = !hint;
   if (submissionHint.textContent !== hint) submissionHint.textContent = hint;
 }
 
@@ -115,6 +125,10 @@ function showStation(index, moveFocus = false) {
 }
 
 function goToStation(index) {
+  if (index > currentStation && rhetoricIncomplete()) {
+    submissionHint.focus();
+    return;
+  }
   const hash = stationLinks[index].hash;
   if (location.hash !== hash) history.pushState(null, '', hash);
   showStation(index, true);
@@ -259,22 +273,21 @@ showReadingGroup(0);
 const scoreLabels = [...document.querySelectorAll('.section-score')].map(node => [node, node.textContent]);
 
 const imagery = document.querySelector('#imagery');
-const phrases = document.querySelector('#phrases');
-const pictures = document.querySelector('#pictures');
-const pairTray = document.querySelector('#pair-tray');
 const pairFeedback = document.querySelector('#pairFeedback');
 const pairResults = document.querySelector('#pair-results');
 const pairReset = document.querySelector('#pairReset');
-const pairReturn = document.querySelector('#pair-return');
-const pairGroupButtons = [...document.querySelectorAll('#pair-groups button')];
-const pairGroups = [
-  { label: '轉化', order: [2, 4, 0, 3, 1] },
-  { label: '譬喻', order: [8, 5, 9, 6, 7] }
-];
+const pairOrders = [[2, 4, 0, 3, 1], [8, 5, 9, 6, 7]];
+const pairGroups = [...imagery.querySelectorAll('.pair-group')].map((group, index) => ({
+  order: pairOrders[index],
+  slots: group.querySelector('.sequence-slots'),
+  cards: group.querySelector('.sequence-cards'),
+  tray: group.querySelector('.sequence-tray'),
+  progress: group.querySelector('.pair-progress'),
+  returnButton: group.querySelector('.pair-return')
+}));
 const assignments = new Map();
 let selectedImage = null;
 let draggedImage = null;
-let pairGroup = 0;
 
 const metaphorMotions = {
   5: { duration: 660, keyframes: [
@@ -317,7 +330,10 @@ function showPairSelection() {
   imagery.querySelectorAll('[data-image]').forEach(button => {
     button.setAttribute('aria-pressed', String(Number(button.dataset.image) === selectedImage));
   });
-  pairReturn.hidden = ![...assignments.values()].includes(selectedImage);
+  const placed = [...assignments.values()].includes(selectedImage);
+  pairGroups.forEach(({ order, returnButton }) => {
+    returnButton.hidden = !placed || !order.includes(selectedImage);
+  });
 }
 
 function selectPairImage(index, button) {
@@ -326,7 +342,7 @@ function selectPairImage(index, button) {
   pairFeedback.textContent = selectedImage === null ? '已取消選取。' :
     '已選「' + pairs[index][1] + '」，請選上方的課文句子。';
   if (selectedImage !== null) {
-    const firstSlot = phrases.querySelector('button');
+    const firstSlot = button.closest('.pair-group').querySelector('.sequence-slots button');
     firstSlot.focus({ preventScroll: true });
     const revealSlots = () => {
       if (selectedImage === index && document.activeElement === firstSlot &&
@@ -342,6 +358,8 @@ function selectPairImage(index, button) {
 
 function movePairImage(index, destination) {
   if (!assessmentIsActive()) return;
+  const group = pairGroups.find(({ order }) => order.includes(index));
+  if (!group || (destination !== null && !group.order.includes(destination))) return;
   const previous = [...assignments].find(([, image]) => image === index)?.[0];
   if (previous !== undefined) {
     if (assignments.has(destination)) assignments.set(previous, assignments.get(destination));
@@ -352,8 +370,8 @@ function movePairImage(index, destination) {
   renderPairs();
   pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題。交卷前可修改。';
   const target = destination === null
-    ? pictures.querySelector('[data-image="' + index + '"]')
-    : phrases.querySelector('[data-pair-slot="' + destination + '"] button');
+    ? group.cards.querySelector('[data-image="' + index + '"]')
+    : group.slots.querySelector('[data-pair-slot="' + destination + '"] button');
   target.focus({ preventScroll: true });
   if (destination !== null) animateMetaphor(target, index);
 }
@@ -397,20 +415,21 @@ function makePairTile(imageIndex, destination = null) {
   }
   button.onclick = () => {
     if (!assessmentIsActive()) return;
-    if (destination !== null && selectedImage !== null && selectedImage !== imageIndex) {
+    const selectionMatchesGroup = pairGroups.some(({ order }) => order.includes(destination) && order.includes(selectedImage));
+    if (selectionMatchesGroup && selectedImage !== imageIndex) {
       movePairImage(selectedImage, destination);
     } else if (imageIndex !== undefined) {
       selectPairImage(imageIndex, button);
     } else {
-      pairFeedback.textContent = '請先選下方的意象圖卡。';
+      pairFeedback.textContent = '請選這一組的意象圖卡。';
     }
   };
   return button;
 }
 
-function addPairDrop(target, destination) {
+function addPairDrop(target, destination, order) {
   function acceptDrag(event) {
-    if (draggedImage === null || state !== 'active') return;
+    if (state !== 'active' || !order.includes(draggedImage)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     target.classList.add('is-drop-target');
@@ -421,7 +440,7 @@ function addPairDrop(target, destination) {
     if (!target.contains(event.relatedTarget)) target.classList.remove('is-drop-target');
   });
   target.addEventListener('drop', event => {
-    if (draggedImage === null) return;
+    if (!order.includes(draggedImage)) return;
     event.preventDefault();
     target.classList.remove('is-drop-target');
     const index = draggedImage;
@@ -444,43 +463,37 @@ imagery.addEventListener('dragend', () => {
   draggedImage = null;
   imagery.querySelector('.is-drop-target')?.classList.remove('is-drop-target');
 });
-addPairDrop(pairTray, null);
+pairGroups.forEach(({ tray, order, returnButton }) => {
+  addPairDrop(tray, null, order);
+  returnButton.onclick = () => movePairImage(selectedImage, null);
+});
 
 function renderPairs() {
-  phrases.replaceChildren();
-  pictures.replaceChildren();
-  const group = pairGroups[pairGroup].order;
-  [...group].sort((a, b) => a - b).forEach(index => {
-    const slot = document.createElement('li');
-    slot.dataset.pairSlot = index;
-    slot.append(makePairTile(assignments.get(index), index));
-    addPairDrop(slot, index);
-    phrases.append(slot);
-  });
   const used = [...assignments.values()];
-  group.filter(index => !used.includes(index)).forEach(index => {
-    const item = document.createElement('li');
-    item.append(makePairTile(index));
-    pictures.append(item);
+  pairGroups.forEach(({ order, slots, cards, tray, progress }) => {
+    slots.replaceChildren();
+    cards.replaceChildren();
+    [...order].sort((a, b) => a - b).forEach(index => {
+      const slot = document.createElement('li');
+      slot.dataset.pairSlot = index;
+      slot.append(makePairTile(assignments.get(index), index));
+      addPairDrop(slot, index, order);
+      slots.append(slot);
+    });
+    order.filter(index => !used.includes(index)).forEach(index => {
+      const item = document.createElement('li');
+      item.append(makePairTile(index));
+      cards.append(item);
+    });
+    tray.classList.remove('is-drop-target');
+    const filled = order.filter(slot => assignments.has(slot)).length;
+    progress.textContent = filled + '／' + order.length;
   });
   pairReset.disabled = state !== 'active';
-  pairGroupButtons.forEach((button, index) => {
-    const { label, order } = pairGroups[index];
-    const filled = order.filter(slot => assignments.has(slot)).length;
-    button.textContent = label + ' ' + filled + '／' + order.length;
-    button.setAttribute('aria-pressed', String(index === pairGroup));
-  });
   showPairSelection();
+  updateSubmissionControls();
 }
 
-pairReturn.onclick = () => movePairImage(selectedImage, null);
-pairGroupButtons.forEach((button, index) => button.onclick = () => {
-  pairGroup = index;
-  selectedImage = null;
-  draggedImage = null;
-  renderPairs();
-  pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題';
-});
 pairReset.onclick = () => {
   if (!assessmentIsActive()) return;
   assignments.clear();
@@ -534,7 +547,6 @@ function startAssessment() {
   readingQuiz.reset(true);
   showReadingGroup(0);
   setSequenceState(state);
-  pairGroup = 0;
   pairReset.onclick();
   pairResults.replaceChildren();
   pairResults.hidden = true;
