@@ -31,15 +31,27 @@ let playerRole = null;
 const submissionHint = document.querySelector('#submission-hint');
 const passResult = document.querySelector('#pass-result');
 const hunterEnding = document.querySelector('#hunter-ending');
-const endingReplyFrame = hunterEnding.querySelector('.ending-reply-frame');
+const endingFrames = [...hunterEnding.querySelectorAll('.ending-scene > img:not(.ending-mouth)')];
 const replayEnding = document.querySelector('#replay-ending');
+const corrections = document.querySelector('#corrections');
+const correctionsForm = document.querySelector('#corrections-form');
+const correctionsItems = document.querySelector('#corrections-items');
+const correctionsSummary = document.querySelector('#corrections-summary');
+const correctionsResults = document.querySelector('#corrections-results');
+const totalScore = document.querySelector('#total-score');
+const scoreLabel = totalScore.closest('.score-label');
+const scoreHome = scoreLabel.parentElement;
+const assessmentResult = document.querySelector('#assessment-result');
+let originalScore = 0;
+let recoveredPoints = 0;
+let correctionItems = [];
 let endingPlayback = 0;
 
 async function playHunterEnding() {
   const playback = ++endingPlayback;
   hunterEnding.classList.remove('ending-playing');
   try {
-    await endingReplyFrame.decode();
+    await Promise.all(endingFrames.map(frame => frame.decode()));
   } catch {
     return;
   }
@@ -181,6 +193,13 @@ function makeQuestions(containerId, questions, points, scoreId) {
     return { field, options, answer, explanation, feedback };
   });
   return {
+    mistakes() {
+      return fields.flatMap(({ field, options, answer }, index) => {
+        const choice = field.querySelector('input:checked');
+        const previous = choice ? Number(choice.value) : null;
+        return previous === answer ? [] : [{ prompt: questions[index][1], number: index + 1, options, answer, previous }];
+      });
+    },
     reset(active) {
       fields.forEach(({ field, feedback }) => {
         field.disabled = !active;
@@ -601,6 +620,90 @@ function updateTime() {
   if (remaining === 0) finishAssessment(true);
 }
 
+function updateResult(total) {
+  totalScore.textContent = total + '／100';
+  const passed = total >= passingScore;
+  const firstPass = passed && hunterEnding.hidden;
+  passResult.textContent = passed ? '闖關通過' : '尚未通過';
+  passResult.dataset.passed = String(passed);
+  passResult.hidden = false;
+  hunterEnding.hidden = !passed;
+  if (firstPass) {
+    assessmentResult.scrollIntoView({ block: 'start', behavior: 'instant' });
+    totalScore.focus({ preventScroll: true });
+    playHunterEnding();
+  }
+  return firstPass;
+}
+
+function prepareCorrections() {
+  const sceneOptions = scenes.map(scene => scene.title);
+  const pairOptions = pairs.map(([, effect]) => effect);
+  const sortingMistakes = placements.flatMap((previous, index) => previous === index ? [] : [{
+    number: index + 1, prompt: '哪個情節應放在這一格？', options: sceneOptions, answer: index, previous,
+    optionOrder: initialOrder
+  }]);
+  const pairingMistakes = pairs.flatMap(([prompt], index) => assignments.get(index) === index ? [] : [{
+    number: index + 1, prompt, options: pairOptions, answer: index, previous: assignments.get(index) ?? null,
+    optionOrder: pairOrders[index < 5 ? 0 : 1]
+  }]);
+  correctionItems = [
+    ['作家介紹', authorQuiz.mistakes()],
+    ['段落大意排序', sortingMistakes],
+    ['轉化與譬喻', pairingMistakes],
+    ['閱讀測驗', readingQuiz.mistakes()]
+  ].flatMap(([station, items]) => items.map(item => ({ ...item, station })));
+}
+
+function renderCorrections(lastResult = '') {
+  correctionsItems.replaceChildren();
+  correctionsForm.hidden = correctionItems.length === 0;
+  correctionsSummary.textContent = '原始分數 ' + originalScore + '／100。訂正後分數 ' +
+    (originalScore + recoveredPoints) + '／100。' + lastResult +
+    (correctionItems.length ? '還有 ' + correctionItems.length + ' 題可訂正。' : '已無待訂正題目。');
+  correctionItems.forEach(({ station, number, prompt, options, previous, optionOrder = options.map((_, index) => index) }, index) => {
+    const field = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = station + '｜第 ' + number + ' 題　' + prompt;
+    const response = document.createElement('p');
+    response.textContent = previous === null ? '原先未作答' : '原先選擇：' + options[previous];
+    const select = document.createElement('select');
+    select.name = 'correction-' + index;
+    select.setAttribute('aria-label', station + '第 ' + number + ' 題的訂正答案');
+    select.add(new Option('請重新選擇答案', ''));
+    for (const option of optionOrder) {
+      select.add(new Option(options[option], option));
+    }
+    field.append(legend, response, select);
+    correctionsItems.append(field);
+  });
+}
+
+correctionsForm.onsubmit = event => {
+  event.preventDefault();
+  if (state !== 'submitted') return;
+  const answers = new FormData(correctionsForm);
+  let attempted = 0;
+  let corrected = 0;
+  correctionItems = correctionItems.filter((item, index) => {
+    const choice = answers.get('correction-' + index);
+    if (!choice) return true;
+    attempted++;
+    const correct = Number(choice) === item.answer;
+    if (correct) corrected++;
+    const result = document.createElement('li');
+    result.textContent = item.station + '第 ' + item.number + ' 題：' +
+      (correct ? '訂正答對，加 2.5 分。' : '訂正未答對。正確答案：' + item.options[item.answer] + '。');
+    correctionsResults.append(result);
+    return false;
+  });
+  recoveredPoints += corrected * 2.5;
+  renderCorrections(attempted ? '本次訂正答對 ' + corrected + ' 題。' : '請先選擇要訂正的答案。');
+  const passedNow = updateResult(originalScore + recoveredPoints);
+  if (passedNow) message.textContent = '訂正後已達 60 分，闖關通過。';
+  else correctionsSummary.focus();
+};
+
 function startAssessment() {
   state = 'active';
   scoreLabels.forEach(([node, label]) => { node.textContent = label; });
@@ -611,9 +714,15 @@ function startAssessment() {
   pairReset.onclick();
   pairResults.replaceChildren();
   pairResults.hidden = true;
-  document.querySelector('#reading-focus').hidden = true;
-  document.querySelector('#total-score').textContent = '—／100';
+  totalScore.textContent = '—／100';
+  scoreHome.append(scoreLabel);
+  assessmentResult.hidden = true;
   passResult.hidden = true;
+  corrections.hidden = true;
+  correctionItems = [];
+  recoveredPoints = 0;
+  correctionsItems.replaceChildren();
+  correctionsResults.replaceChildren();
   hunterEnding.hidden = true;
   hunterEnding.classList.remove('ending-playing');
   readingProgress.textContent = '已作答 0／' + readingQuestions.length + ' 題';
@@ -640,26 +749,21 @@ function finishAssessment(expired) {
   selectedImage = null;
   draggedImage = null;
   renderPairs();
-  const total = authorQuiz.grade() + sequenceScore + pairScore + readingQuiz.grade();
-  document.querySelector('#total-score').textContent = total + '／100';
-  const passed = total >= passingScore;
-  passResult.textContent = passed ? '闖關通過' : '尚未通過';
-  passResult.dataset.passed = String(passed);
-  passResult.hidden = false;
-  hunterEnding.hidden = !passed;
-  document.querySelector('#reading-focus').hidden = false;
+  originalScore = authorQuiz.grade() + sequenceScore + pairScore + readingQuiz.grade();
+  assessmentResult.append(scoreLabel);
+  assessmentResult.hidden = false;
+  prepareCorrections();
+  corrections.hidden = false;
+  renderCorrections();
   message.textContent = (expired ? '時間到，已自動交卷。' : '已交卷。') +
-    (passed ? '已達 60 分，闖關通過。' : '尚未達到 60 分，可查看解析後重新作答。');
+    (originalScore >= passingScore ? '已達 60 分，闖關通過。' : '尚未達到 60 分，可透過錯題訂正提高分數。');
   confirmingSubmission = false;
   updateSubmissionControls();
   restartButton.hidden = false;
   introStart.textContent = '查看作答結果';
-  if (passed) {
-    playHunterEnding();
-    hunterEnding.scrollIntoView();
-    hunterEnding.querySelector('h2').focus({ preventScroll: true });
-  } else {
-    document.querySelector('#total-score').focus();
+  if (!updateResult(originalScore)) {
+    assessmentResult.scrollIntoView({ block: 'start', behavior: 'instant' });
+    totalScore.focus({ preventScroll: true });
   }
 }
 

@@ -50,7 +50,7 @@
 #pass-result[hidden] { display: none; }
 #pass-result[data-passed="true"] { background: #285541; }
 .section-score, .item-score { font-weight: 650; }
-#author, #sequence, #imagery, #quiz, #reading-focus, fieldset, .scene-card { scroll-margin-top: var(--assessment-offset, 170px); }
+#author, #sequence, #imagery, #quiz, fieldset, .scene-card { scroll-margin-top: var(--assessment-offset, 170px); }
 #sequence .sequence-actions { position: static; }
 fieldset legend { font-weight: 700; padding: 0 6px; }
 #author-questions legend, #reading-questions legend {
@@ -76,7 +76,6 @@ label.option {
 fieldset:disabled { opacity: 1; }
 button:disabled { cursor: default; opacity: .6; }
 #pair-results li + li { margin-top: .65rem; }
-#reading-focus { margin-top: 2rem; }
 
 /* Geometric bands inspired by weaving. */
 :root {
@@ -207,6 +206,24 @@ header p { color: #f0d6b3; }
 #reading-role-cue { color: var(--rust); font-weight: 650; }
 .opening-stages { margin: .65rem 0; padding-inline-start: 1.4em; color: #f0d6b3; }
 #hunter-ending { max-width: 760px; margin-inline: auto; scroll-margin-top: var(--assessment-offset, 170px); }
+#assessment-result { text-align: center; scroll-margin-top: var(--assessment-offset, 170px); }
+#assessment-result .score-label { display: grid; justify-items: center; padding-top: 1rem; font-size: 1.5rem; font-weight: 750; }
+#assessment-result #total-score { font-size: clamp(2.5rem, 13vw, 100pt); line-height: 1.05; }
+#assessment-result #pass-result { margin: .5rem 0 0; }
+#corrections, #corrections-summary { scroll-margin-top: var(--assessment-offset, 170px); }
+#corrections-summary { font-weight: 700; }
+#corrections-items select {
+  display: block;
+  width: 100%;
+  padding: .65rem;
+  border: 1px solid #aa8d64;
+  border-radius: 6px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+}
+#corrections-items fieldset { padding: clamp(10px, 2vw, 22px); }
+#corrections-items fieldset p { margin: 0 0 .5rem; }
 #hunter-ending img { display: block; width: 100%; height: auto; border-radius: 6px; }
 .ending-scene { position: relative; }
 #hunter-ending :is(.ending-reply-frame, .ending-mouth) { position: absolute; inset: 0; opacity: 0; }
@@ -274,7 +291,7 @@ main > section > h2 { display: flex; align-items: baseline; gap: .6em; }
 main > section > h2::before { content: "◆"; color: var(--rust); font-size: .65em; }
 button { background: var(--rust); }
 button.secondary { background: #ecddc8; color: var(--ink); }
-a, #reading-focus summary { color: var(--rust); }
+a { color: var(--rust); }
 input { accent-color: var(--rust); }
 label:has(input:checked) {
   background: #f4dfcf;
