@@ -71,6 +71,7 @@
 .sequence-slots .item-score { text-align: center; font-size: .82rem; }
 
 .pair-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.pair-grid .sequence-tile { overflow: hidden; }
 .pair-art {
   display: block;
   width: 100%;

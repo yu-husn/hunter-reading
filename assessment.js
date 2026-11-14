@@ -275,6 +275,43 @@ let selectedImage = null;
 let draggedImage = null;
 let pairGroup = 0;
 
+const metaphorMotions = {
+  5: { duration: 660, keyframes: [
+    { transform: 'translate(-12%, -20%) scale(.85)' },
+    { transform: 'translate(4%, 9%) scale(1.1)', offset: .72 },
+    { transform: 'none' }
+  ] },
+  6: { duration: 520, keyframes: [
+    { transform: 'translate(27%, -22%)', opacity: .55 },
+    { transform: 'translate(-8%, 7%)', opacity: 1, offset: .65 },
+    { transform: 'none' }
+  ] },
+  7: { duration: 740, keyframes: [
+    { transform: 'translate(-12%, 8%) rotate(-8deg)' },
+    { transform: 'translate(9%, -9%) rotate(5deg)', offset: .72 },
+    { transform: 'none' }
+  ] },
+  8: { duration: 850, keyframes: [
+    { transform: 'none' },
+    { transform: 'scale(1.18)', offset: .55 },
+    { transform: 'none' }
+  ] },
+  9: { duration: 950, keyframes: [
+    { transform: 'none' },
+    { transform: 'translateY(3%) rotate(-6deg)' },
+    { transform: 'translateY(-3%) rotate(6deg)' },
+    { transform: 'none' }
+  ] }
+};
+
+function animateMetaphor(button, index) {
+  const motion = metaphorMotions[index];
+  if (!motion || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const art = button.querySelector('.pair-art');
+  art.getAnimations().forEach(animation => animation.cancel());
+  return art.animate(motion.keyframes, { duration: motion.duration, easing: 'ease-in-out' });
+}
+
 function showPairSelection() {
   imagery.querySelectorAll('[data-image]').forEach(button => {
     button.setAttribute('aria-pressed', String(Number(button.dataset.image) === selectedImage));
@@ -282,7 +319,7 @@ function showPairSelection() {
   pairReturn.hidden = ![...assignments.values()].includes(selectedImage);
 }
 
-function selectPairImage(index) {
+function selectPairImage(index, button) {
   selectedImage = selectedImage === index ? null : index;
   showPairSelection();
   pairFeedback.textContent = selectedImage === null ? '已取消選取。' :
@@ -290,9 +327,15 @@ function selectPairImage(index) {
   if (selectedImage !== null) {
     const firstSlot = phrases.querySelector('button');
     firstSlot.focus({ preventScroll: true });
-    if (firstSlot.getBoundingClientRect().top < assessmentBar.getBoundingClientRect().bottom) {
-      firstSlot.scrollIntoView({ block: 'start' });
-    }
+    const revealSlots = () => {
+      if (selectedImage === index && document.activeElement === firstSlot &&
+          firstSlot.getBoundingClientRect().top < assessmentBar.getBoundingClientRect().bottom) {
+        firstSlot.scrollIntoView({ block: 'start' });
+      }
+    };
+    const animation = animateMetaphor(button, index);
+    if (animation) animation.onfinish = revealSlots;
+    else revealSlots();
   }
 }
 
@@ -311,6 +354,7 @@ function movePairImage(index, destination) {
     ? pictures.querySelector('[data-image="' + index + '"]')
     : phrases.querySelector('[data-pair-slot="' + destination + '"] button');
   target.focus({ preventScroll: true });
+  if (destination !== null) animateMetaphor(target, index);
 }
 
 function makePairTile(imageIndex, destination = null) {
@@ -354,7 +398,7 @@ function makePairTile(imageIndex, destination = null) {
     if (destination !== null && selectedImage !== null && selectedImage !== imageIndex) {
       movePairImage(selectedImage, destination);
     } else if (imageIndex !== undefined) {
-      selectPairImage(imageIndex);
+      selectPairImage(imageIndex, button);
     } else {
       pairFeedback.textContent = '請先選下方的意象圖卡。';
     }
