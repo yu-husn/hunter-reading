@@ -721,10 +721,10 @@ new ResizeObserver(([entry]) => {
 showStationFromAddress();
 
 const musicButtons = [...document.querySelectorAll('#music-toggle, #opening-music-toggle')];
-const music = new Audio('tafi-maradi.mp3');
+// The MP3 is attenuated so the same mix also works on devices that use system volume.
+const music = new Audio('tafi-maradi-soft.mp3');
 music.loop = true;
-music.preload = 'none';
-music.volume = 0.3;
+music.preload = 'auto';
 let musicEnabled = true;
 
 async function playMusic() {
@@ -733,23 +733,29 @@ async function playMusic() {
   } catch (error) {
     if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') {
       musicEnabled = false;
-      updateMusicButtons();
     }
   }
+  updateMusicButtons();
 }
 
 function updateMusicButtons() {
   musicButtons.forEach(button => {
-    button.textContent = musicEnabled ? '關閉配樂' : '開啟配樂';
+    button.textContent = !music.paused ? '關閉配樂'
+      : button.id === 'opening-music-toggle' && music.currentTime === 0 ? '播放開場配樂' : '開啟配樂';
   });
 }
 
 musicButtons.forEach(button => button.addEventListener('click', () => {
-  musicEnabled = !musicEnabled;
-  updateMusicButtons();
-  if (musicEnabled) playMusic();
-  else music.pause();
+  musicEnabled = music.paused;
+  if (musicEnabled) {
+    playMusic();
+  } else {
+    music.pause();
+    updateMusicButtons();
+  }
 }));
+music.addEventListener('play', updateMusicButtons);
+music.addEventListener('pause', updateMusicButtons);
 document.addEventListener('click', event => {
   if (event.target.closest('#music-toggle, #opening-music-toggle')) return;
   if (musicEnabled && music.paused) playMusic();
