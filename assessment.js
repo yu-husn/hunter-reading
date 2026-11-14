@@ -670,10 +670,13 @@ function updateResult(total) {
 function prepareCorrections() {
   const sceneOptions = scenes.map(scene => scene.title);
   const pairOptions = pairs.map(([, effect]) => effect);
-  const sortingMistakes = placements.flatMap((previous, index) => previous === index ? [] : [{
-    number: index + 1, prompt: '哪個情節應放在這一格？', options: sceneOptions, answer: index, previous,
-    optionOrder: initialOrder
-  }]);
+  const sortingMistakes = sequenceAnswerOrder.flatMap((answer, index) => {
+    const previous = placements[index];
+    return previous === answer ? [] : [{
+      number: index + 1, prompt: '哪個情節應放在這一格？', options: sceneOptions, answer, previous,
+      optionOrder: initialOrder
+    }];
+  });
   const pairingMistakes = pairs.flatMap(([prompt], index) => assignments.get(index) === index ? [] : [{
     number: index + 1, prompt, options: pairOptions, answer: index, previous: assignments.get(index) ?? null,
     optionOrder: pairOrders[index < 5 ? 0 : 1]

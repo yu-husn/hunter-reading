@@ -17,17 +17,17 @@ const scenes = [
   {
     title: '在溪邊發現蹄印',
     summary: '「我」來到山谷，在溪邊的濕泥上發現蹄印，循著蹤跡尋找山豬。',
-    clue: '先發現蹤跡，才有線索選擇在哪裡等候。'
+    clue: '「我」先在溪邊發現蹄印，再循著蹤跡找山豬。'
   },
   {
     title: '躲在岩石後等候',
-    summary: '「我」回到山谷，在芒草遮住的巨岩後伏下，等山豬黃昏到溪邊喝水。',
-    clue: '這時山豬還沒有現身。等候是下一段交鋒的前提。'
+    summary: '初次交鋒落空後，「我」回到山谷，在芒草遮住的巨岩後伏下，等山豬再到溪邊喝水。',
+    clue: '這是第一次交鋒失手後的等候。接著，「我」才看見母豬帶著幼豬。'
   },
   {
     title: '初次交鋒落空',
     summary: '山豬現身後，「我」出手，卻被山豬撞開。回過神來，眼前只剩空寂的樹林。',
-    clue: '這是第一次交鋒。後來再聽見草叢的動靜，「我」才看見母豬帶著幼豬。'
+    clue: '第一次交鋒失手後，「我」才回到山谷，躲在岩石後等候。'
   },
   {
     title: '看見母豬帶著幼豬',
@@ -50,6 +50,7 @@ const solution = sequence.querySelector('.sequence-solution');
 const shuffleButton = sequence.querySelector('.sequence-reset');
 const returnButton = sequence.querySelector('.sequence-return');
 const initialOrder = [4, 1, 6, 3, 7, 0, 5, 2];
+const sequenceAnswerOrder = [0, 1, 2, 3, 5, 4, 6, 7];
 let trayOrder = [...initialOrder];
 let placements = Array(scenes.length).fill(null);
 let selectedScene = null;
@@ -191,7 +192,7 @@ function renderCards() {
     if (!solution.hidden) {
       const score = document.createElement('span');
       score.className = 'item-score';
-      score.textContent = (sceneIndex === position ? '2.5' : '0') + '／2.5 分';
+      score.textContent = (sceneIndex === sequenceAnswerOrder[position] ? '2.5' : '0') + '／2.5 分';
       slot.append(score);
     }
     slots.append(slot);
@@ -213,7 +214,7 @@ shuffleButton.addEventListener('click', () => {
       const other = Math.floor(Math.random() * (index + 1));
       [trayOrder[index], trayOrder[other]] = [trayOrder[other], trayOrder[index]];
     }
-  } while (trayOrder.join() === previous || trayOrder.every((sceneIndex, position) => sceneIndex === position));
+  } while (trayOrder.join() === previous || trayOrder.every((sceneIndex, position) => sceneIndex === sequenceAnswerOrder[position]));
   placements.fill(null);
   selectedScene = null;
   renderCards();
@@ -236,14 +237,15 @@ function setSequenceState(state) {
 }
 
 function gradeSequence() {
-  const correct = placements.filter((sceneIndex, position) => sceneIndex === position).length;
+  const correct = placements.filter((sceneIndex, position) => sceneIndex === sequenceAnswerOrder[position]).length;
   status.textContent = placements.some(sceneIndex => sceneIndex !== null)
     ? '排對 ' + correct + '／8 張。' : '段落排序未作答。';
   return correct * 2.5;
 }
 
 const explanations = solution.querySelector('ol');
-scenes.forEach(({ title, clue }) => {
+sequenceAnswerOrder.forEach(sceneIndex => {
+  const { title, clue } = scenes[sceneIndex];
   const item = document.createElement('li');
   const heading = document.createElement('strong');
   heading.textContent = title;
