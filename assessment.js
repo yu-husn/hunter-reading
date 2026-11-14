@@ -721,7 +721,7 @@ new ResizeObserver(([entry]) => {
 showStationFromAddress();
 
 const musicButtons = [...document.querySelectorAll('#music-toggle, #opening-music-toggle')];
-const music = new Audio('ancient-rite.mp3');
+const music = new Audio('tafi-maradi.mp3');
 music.loop = true;
 music.preload = 'none';
 music.volume = 0.3;
