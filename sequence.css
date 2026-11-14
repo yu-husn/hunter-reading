@@ -39,6 +39,7 @@
 }
 
 .sequence-tile:disabled { opacity: 1; }
+.sequence-tile > span { pointer-events: none; }
 .sequence-tile[draggable="true"] { cursor: grab; }
 .sequence-tile[aria-pressed="true"], .sequence-slots .is-drop-target .sequence-tile {
   outline: 3px solid #8d3025;

@@ -123,12 +123,14 @@ function addDrag(button, sceneIndex) {
 }
 
 function addDrop(target, destination) {
-  target.addEventListener('dragover', event => {
+  function acceptDrag(event) {
     if (draggingScene === null || sequenceLocked) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     target.classList.add('is-drop-target');
-  });
+  }
+  target.addEventListener('dragenter', acceptDrag);
+  target.addEventListener('dragover', acceptDrag);
   target.addEventListener('dragleave', event => {
     if (!target.contains(event.relatedTarget)) target.classList.remove('is-drop-target');
   });
