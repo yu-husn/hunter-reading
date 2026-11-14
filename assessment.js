@@ -341,7 +341,13 @@ function makePairTile(imageIndex, destination = null) {
     art.setAttribute('aria-hidden', 'true');
     button.dataset.image = imageIndex;
     button.draggable = !button.disabled;
-    button.append(art, pairs[imageIndex][1]);
+    const effect = document.createElement('span');
+    effect.className = 'sequence-title';
+    effect.textContent = pairs[imageIndex][1];
+    const clue = document.createElement('span');
+    clue.className = 'rhetoric-clue';
+    clue.textContent = (imageIndex < 5 ? '轉化線索｜' : '相似點｜') + pairs[imageIndex][4];
+    button.append(art, effect, clue);
   }
   button.onclick = () => {
     if (!assessmentIsActive()) return;
