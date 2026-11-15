@@ -75,10 +75,14 @@ const assessmentResult = document.querySelector('#assessment-result');
 let originalScore = 0;
 let recoveredPoints = 0;
 let correctionItems = [];
-let correctionAttempts = {};
-let submittedAt = 0;
-let restoringAttempt = false;
-const attemptStorageKey = 'hunter-reading-attempt-v1';
+try {
+  localStorage.removeItem('hunter-reading-attempt-v1');
+} catch {
+  // Some browsers block access to storage.
+}
+window.addEventListener('pageshow', event => {
+  if (event.persisted) location.reload();
+});
 let endingPlayback = 0;
 
 async function playHunterEnding() {
@@ -195,7 +199,6 @@ function showStation(index, moveFocus = false) {
     stations[index].scrollIntoView();
     stations[index].focus({ preventScroll: true });
   }
-  saveAttempt();
 }
 
 function goToStation(index) {
@@ -230,6 +233,10 @@ function assessmentIsActive() {
   return state === 'active';
 }
 
+function formatChoice(text, index) {
+  return 'ABCD'[index] + '. ' + text.trimEnd().replace(/。$/u, '');
+}
+
 function makeQuestions(containerId, questions, points, scoreId) {
   const container = document.querySelector('#' + containerId);
   const fields = questions.map(([skill, prompt, options, answer, explanation], index) => {
@@ -240,7 +247,8 @@ function makeQuestions(containerId, questions, points, scoreId) {
     const caption = document.createElement('small');
     caption.textContent = skill + '・' + points + ' 分';
     field.append(legend, caption);
-    options.forEach((option, optionIndex) => {
+    const choices = options.map(formatChoice);
+    choices.forEach((option, optionIndex) => {
       const label = document.createElement('label');
       label.className = 'option';
       const input = document.createElement('input');
@@ -255,19 +263,13 @@ function makeQuestions(containerId, questions, points, scoreId) {
     feedback.hidden = true;
     field.append(feedback);
     container.append(field);
-    return { field, options, answer, explanation, feedback };
+    return { field, options: choices, answer, explanation, feedback };
   });
   return {
     choices() {
       return fields.map(({ field }) => {
         const choice = field.querySelector('input:checked');
         return choice ? Number(choice.value) : null;
-      });
-    },
-    restore(choices) {
-      fields.forEach(({ field }, index) => {
-        const input = field.querySelectorAll('input')[choices[index]];
-        if (input) input.checked = true;
       });
     },
     mistakes() {
@@ -359,7 +361,6 @@ function showReadingGroup(index, focus = false) {
     groupTitle.closest('.reading-scene').scrollIntoView({ block: 'start' });
     groupTitle.focus({ preventScroll: true });
   }
-  saveAttempt();
 }
 
 groupButtons.forEach((button, index) => {
@@ -525,7 +526,6 @@ function movePairImage(index, destination) {
   if (destination !== null) assignments.set(destination, index);
   selectedImage = null;
   renderPairs();
-  saveAttempt();
   pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題。交卷前可修改。';
   const target = destination === null
     ? group.cards.querySelector('[data-image="' + index + '"]')
@@ -667,7 +667,6 @@ function resetPairs() {
 pairReset.onclick = () => {
   if (!assessmentIsActive()) return;
   resetPairs();
-  saveAttempt();
 };
 
 function gradePairs() {
@@ -689,61 +688,6 @@ function gradePairs() {
   });
   pairResults.hidden = false;
   return score;
-}
-
-function saveAttempt() {
-  if (state === 'ready' || restoringAttempt) return;
-  try {
-    localStorage.setItem(attemptStorageKey, JSON.stringify({
-      role: Object.keys(roles).find(role => roles[role] === playerRole),
-      deadline, submittedAt, currentStation, currentGroup,
-      author: authorQuiz.choices(), reading: readingQuiz.choices(),
-      placements, trayOrder, assignments: [...assignments], correctionAttempts
-    }));
-  } catch {
-    // The game still works if browser storage is unavailable.
-  }
-}
-
-function restoreAttempt() {
-  let saved;
-  try {
-    saved = JSON.parse(localStorage.getItem(attemptStorageKey));
-  } catch {
-    return;
-  }
-  if (!saved || !Object.hasOwn(roles, saved.role) || !Number.isFinite(saved.deadline) ||
-      saved.author?.length !== authorQuestions.length || saved.reading?.length !== readingQuestions.length ||
-      saved.placements?.length !== scenes.length || saved.trayOrder?.length !== scenes.length ||
-      !Array.isArray(saved.assignments)) return;
-
-  restoringAttempt = true;
-  roleForm.elements['hunter-role'].value = saved.role;
-  selectRole(saved.role);
-  deadline = saved.deadline;
-  startAssessment(false);
-  authorQuiz.restore(saved.author);
-  readingQuiz.restore(saved.reading);
-  placements = saved.placements;
-  trayOrder = saved.trayOrder;
-  saved.assignments.forEach(([slot, image]) => assignments.set(slot, image));
-  correctionAttempts = saved.correctionAttempts ?? {};
-  renderCards();
-  status.textContent = '已放置 ' + placements.filter(card => card !== null).length + '／' + scenes.length + ' 張。';
-  renderPairs();
-  pairFeedback.textContent = '已配對 ' + assignments.size + '／' + pairs.length + ' 題。';
-  updateReadingProgress();
-  showReadingGroup(readingGroups[saved.currentGroup] ? saved.currentGroup : 0);
-  showStation(stations[saved.currentStation] ? saved.currentStation : 0, true);
-  if (saved.submittedAt) {
-    finishAssessment(saved.submittedAt >= deadline, saved.submittedAt);
-  } else {
-    message.textContent = '已恢復上次作答。倒數依原本截止時間繼續。';
-    timer = setInterval(updateTime, 250);
-    updateTime();
-  }
-  restoringAttempt = false;
-  saveAttempt();
 }
 
 function showTime(seconds) {
@@ -825,10 +769,6 @@ function prepareCorrections() {
   ].flatMap(([station, items], stationIndex) => items.map(item => ({
     ...item, station, stationIndex, key: stationIndex + '-' + item.number
   })));
-  for (const item of correctionItems) {
-    if (Object.hasOwn(correctionAttempts, item.key)) showCorrectionResult(item, correctionAttempts[item.key]);
-  }
-  correctionItems = correctionItems.filter(item => !Object.hasOwn(correctionAttempts, item.key));
   solution.hidden = correctionItems.some(item => item.stationIndex === 1);
 }
 
@@ -881,7 +821,6 @@ correctionsForm.onsubmit = event => {
     const choice = answers.get(item.key);
     if (!choice) return true;
     attempted++;
-    correctionAttempts[item.key] = Number(choice);
     if (Number(choice) === item.answer) corrected++;
     showCorrectionResult(item, Number(choice));
     return false;
@@ -891,11 +830,9 @@ correctionsForm.onsubmit = event => {
   const passedNow = updateResult(originalScore + recoveredPoints);
   if (passedNow) message.textContent = '訂正後已達 60 分，闖關通過。';
   else correctionsSummary.focus();
-  saveAttempt();
 };
 
-function startAssessment(startTimer = true) {
-  restoringAttempt = true;
+function startAssessment() {
   state = 'active';
   endingFrames.forEach(frame => { frame.loading = 'eager'; });
   scoreLabels.forEach(([node, label]) => { node.textContent = label; });
@@ -912,8 +849,6 @@ function startAssessment(startTimer = true) {
   passResult.hidden = true;
   corrections.hidden = true;
   correctionItems = [];
-  correctionAttempts = {};
-  submittedAt = 0;
   recoveredPoints = 0;
   correctionsItems.replaceChildren();
   correctionsResults.replaceChildren();
@@ -925,20 +860,16 @@ function startAssessment(startTimer = true) {
   restartButton.hidden = true;
   confirmingSubmission = false;
   message.textContent = '作答中。完成四站後，在閱讀測驗最後一步交卷。';
-  if (startTimer) {
-    restoringAttempt = false;
-    timer = setInterval(updateTime, 250);
-    updateTime();
-    goToStation(currentStation);
-  }
+  timer = setInterval(updateTime, 250);
+  updateTime();
+  goToStation(currentStation);
 }
 
-function finishAssessment(expired, finishedAt = expired ? deadline : Date.now()) {
+function finishAssessment(expired) {
   if (state !== 'active') return;
   state = 'submitted';
-  submittedAt = finishedAt;
   clearInterval(timer);
-  showTime(expired ? 0 : Math.max(0, Math.ceil((deadline - submittedAt) / 1000)));
+  showTime(expired ? 0 : Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
   const sequenceScore = gradeSequence();
   document.querySelector('#sequence-score').textContent += '｜得分 ' + sequenceScore + ' 分';
   setSequenceState(state);
@@ -963,7 +894,6 @@ function finishAssessment(expired, finishedAt = expired ? deadline : Date.now())
     assessmentResult.scrollIntoView({ block: 'start', behavior: 'instant' });
     totalScore.focus({ preventScroll: true });
   }
-  saveAttempt();
 }
 
 function selectRole(role) {
@@ -1016,7 +946,6 @@ document.querySelector('#reading-questions').addEventListener('change', () => {
   updateReadingProgress();
   showReadingGroup(currentGroup);
 });
-document.querySelector('#author-questions').addEventListener('change', saveAttempt);
 document.querySelector('#total-score').tabIndex = -1;
 document.querySelector('#author').tabIndex = -1;
 authorQuiz.reset(false);
@@ -1028,7 +957,6 @@ new ResizeObserver(([entry]) => {
   entry.target.parentElement.style.setProperty('--assessment-offset', `${entry.target.offsetHeight + 12}px`);
 }).observe(assessmentBar);
 showStationFromAddress();
-restoreAttempt();
 
 const musicButtons = [...document.querySelectorAll('#music-toggle, #opening-music-toggle')];
 // The MP3 is attenuated so the same mix also works on devices that use system volume.
